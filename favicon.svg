@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">ED Throughput Sandbox</title>
+  <rect width="64" height="64" rx="13" fill="#132b3a"/>
+  <path d="M14 45h36" stroke="#90a5af" stroke-width="2"/>
+  <rect x="16" y="30" width="8" height="15" rx="2" fill="#fff"/>
+  <rect x="28" y="16" width="8" height="29" rx="2" fill="#84c4ce"/>
+  <rect x="40" y="23" width="8" height="22" rx="2" fill="#d9ac60"/>
+</svg>
