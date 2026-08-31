@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">ED Throughput Sandbox</title>
+  <desc id="desc">A restrained clinical operations graphic showing input, throughput, output, and a 24-hour flow trace.</desc>
+  <rect width="1280" height="640" fill="#f4f7f9"/>
+  <rect x="54" y="54" width="1172" height="532" rx="18" fill="#fff" stroke="#cad5dc" stroke-width="2"/>
+  <g transform="translate(94 92)">
+    <rect width="54" height="54" rx="11" fill="#132b3a"/>
+    <rect x="12" y="29" width="8" height="15" rx="2" fill="#fff"/>
+    <rect x="23" y="12" width="8" height="32" rx="2" fill="#84c4ce"/>
+    <rect x="34" y="21" width="8" height="23" rx="2" fill="#d9ac60"/>
+  </g>
+  <text x="174" y="115" fill="#075e73" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="2">SYNTHETIC DISCRETE-EVENT SIMULATION</text>
+  <text x="94" y="218" fill="#132b3a" font-family="Inter,Arial,sans-serif" font-size="64" font-weight="750" letter-spacing="-2">ED Throughput Sandbox</text>
+  <text x="94" y="268" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="25">Explore demand, capacity, care duration, admission pressure, and boarding.</text>
+  <g transform="translate(94 326)" font-family="Inter,Arial,sans-serif">
+    <rect width="270" height="104" rx="10" fill="#eef5f9" stroke="#c7d9e3"/>
+    <circle cx="34" cy="34" r="10" fill="none" stroke="#175e8c" stroke-width="4"/>
+    <text x="58" y="41" fill="#132b3a" font-size="22" font-weight="700">Input</text>
+    <text x="26" y="77" fill="#526874" font-size="16">Arrivals · pattern · acuity</text>
+    <path d="M285 52h42m-10-10 10 10-10 10" fill="none" stroke="#8ba0aa" stroke-width="3"/>
+    <g transform="translate(342)">
+      <rect width="270" height="104" rx="10" fill="#eef8f6" stroke="#c5ddd9"/>
+      <rect x="24" y="24" width="20" height="20" rx="5" fill="none" stroke="#006b64" stroke-width="4"/>
+      <text x="58" y="41" fill="#132b3a" font-size="22" font-weight="700">Throughput</text>
+      <text x="26" y="77" fill="#526874" font-size="16">Spaces · duration · routing</text>
+    </g>
+    <path d="M627 52h42m-10-10 10 10-10 10" fill="none" stroke="#8ba0aa" stroke-width="3"/>
+    <g transform="translate(684)">
+      <rect width="270" height="104" rx="10" fill="#fbf6e9" stroke="#e3d6ad"/>
+      <rect x="27" y="27" width="16" height="16" transform="rotate(45 35 35)" fill="none" stroke="#855700" stroke-width="4"/>
+      <text x="58" y="41" fill="#132b3a" font-size="22" font-weight="700">Output</text>
+      <text x="26" y="77" fill="#526874" font-size="16">Admission · boarding · flow</text>
+    </g>
+  </g>
+  <g transform="translate(94 482)">
+    <path d="M0 38C60 36 81 32 133 36s86 18 135 13 74-26 126-25 81 38 143 31 82-42 139-37 79 48 139 38 95-38 149-29 76 26 136 19" fill="none" stroke="#075e73" stroke-width="5"/>
+    <path d="M0 62h1086" stroke="#cad5dc" stroke-width="2"/>
+    <text x="0" y="91" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="15">00:00</text>
+    <text x="514" y="91" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="15">12:00</text>
+    <text x="1037" y="91" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="15">24:00</text>
+  </g>
+</svg>
