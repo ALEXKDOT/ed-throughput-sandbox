@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: 'If you use this educational software, please cite it using the metadata below.'
+title: 'ED Throughput Sandbox'
+type: software
+version: 1.0.0
+date-released: 2026-08-31
+url: 'https://ALEXKDOT.github.io/ed-throughput-sandbox/'
+repository-code: 'https://github.com/ALEXKDOT/ed-throughput-sandbox'
+license: MIT
+authors:
+  - family-names: 'Krawec'
+    given-names: 'Alexander'
+    email: '316415118+ALEXKDOT@users.noreply.github.com'
+abstract: >-
+  An interactive, browser-based discrete-event simulation for exploring
+  emergency-department flow, capacity, and boarding scenarios with synthetic
+  assumptions and no patient data.
+keywords:
+  - emergency department
+  - discrete-event simulation
+  - healthcare operations
+  - patient flow
+  - boarding
