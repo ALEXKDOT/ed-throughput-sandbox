@@ -1,28 +1,25 @@
 # ED Throughput Sandbox
 
-> An interactive, browser-based discrete-event simulation for exploring emergency-department flow, capacity, and boarding scenarios.
+An interactive, browser-based discrete-event simulation for exploring how synthetic emergency-department demand, treatment-space capacity, admission, and boarding assumptions interact.
 
-[Live demo](https://ALEXKDOT.github.io/ed-throughput-sandbox/) · [Model specification](./docs/MODEL.md) · [Validation plan](./docs/VALIDATION.md) · [Owner guide](./docs/OWNER_GUIDE.md)
+**[Open the live demo](https://alexkdot.github.io/ed-throughput-sandbox/)** · [Model specification](./docs/MODEL.md) · [Evidence and limitations](./docs/QA.md)
 
-[![CI](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml)
-[![Deploy GitHub Pages](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml)
+- Configure synthetic arrivals, acuity, treatment spaces, care duration, admission, boarding, and low-acuity fast-track assumptions.
+- Run seeded Monte Carlo replications and inspect medians with 10th–90th percentile simulation intervals.
+- Compare paired A/B scenarios, explore one-at-a-time sensitivity, and share or export assumptions and results.
 
-![ED Throughput Sandbox showing synthetic assumptions and simulation results](./public/screenshots/app-desktop.png)
+> **Synthetic-model disclaimer:** This educational systems-modeling project uses illustrative synthetic assumptions and no patient data. It has not been calibrated or validated to any institution, has measured no patient or operational impact, and must not be used for clinical, staffing, regulatory, or operational decisions.
 
-ED Throughput Sandbox is a static, client-side educational application for testing operational hypotheses in a simplified emergency-department flow model. Users can change synthetic demand, acuity, capacity, treatment duration, admission, boarding, and fast-track assumptions; run repeated seeded simulations; and compare scenarios with uncertainty. No patient data, backend, accounts, telemetry, or institution-specific calibration are used.
+![Current ED Throughput Sandbox desktop interface showing synthetic assumptions and simulation results](./public/screenshots/app-desktop.png)
 
-## What it can do
+ED Throughput Sandbox is a static, client-side application: the model runs in a Web Worker, and no backend, account, database, telemetry, or runtime API key is involved.
 
-- Organize assumptions around the **input–throughput–output** framework for ED crowding.
-- Run a stochastic, event-driven simulation in a Web Worker with a 24-hour warm-up and 24-hour analysis period.
-- Repeat 20–200 deterministic-seed replications and report medians with 10th–90th percentile intervals.
-- Preserve treatment-space occupancy while admitted synthetic patients are boarding.
-- Compare Scenario A and B with common random numbers and within-replication deltas.
-- Model an optional low-acuity fast track whose spaces are reallocated from total ED capacity.
-- Save assumptions locally, encode both scenarios in a shareable URL, and import/export validated JSON.
-- Export summary and time-series results as CSV and print a report view.
-- Sweep one parameter across up to seven distinct valid values in a one-at-a-time sensitivity explorer.
-- Explain every major assumption, event rule, distribution, source boundary, and limitation.
+## Product, model, and implementation ownership
+
+- **Product conception and design:** Alexander Krawec defined the use case, interaction model, scope, and evidence boundaries.
+- **Simulation-model design:** Alexander translated the input–throughput–output framework into the documented event logic, synthetic assumptions, metrics, and comparison approach.
+- **AI-assisted software implementation:** The React/TypeScript implementation, testing, documentation, and release work used AI coding assistance under Alexander's direction and review.
+- **Evidence status:** Software verification establishes implementation conformance only. The project has no institutional calibration or validation and no measured patient or operational impact.
 
 ## Model at a glance
 
@@ -49,6 +46,7 @@ The development server prints the local URL. All simulation work occurs in the b
 
 | Command                 | Purpose                                                           |
 | ----------------------- | ----------------------------------------------------------------- |
+| `npm run assets:social` | Regenerate the 1,280 × 640 social-preview PNG from its SVG source |
 | `npm run dev`           | Start the Vite development server                                 |
 | `npm run build`         | Type-check and create the production bundle                       |
 | `npm run preview`       | Preview the production bundle locally                             |
@@ -71,6 +69,9 @@ npm run test:e2e:install
 The committed suite covers exact PRNG and duration-transform vectors, zero-arrival and known-event fixtures, resource limits, fast-track eligibility, strict priority/FIFO behavior, boarding occupancy, warm-up boundaries, same-seed reproducibility, paired comparisons, hostile imports, portability, CSV safety, property-generated capacities, and responsive workflows.
 
 Passing software tests establishes implementation conformance—not empirical validity. The model has not been calibrated or validated against a real ED. See [docs/VALIDATION.md](./docs/VALIDATION.md) for release gates and [docs/QA.md](./docs/QA.md) for actual commands and results from the latest audited build.
+
+[![CI](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml)
+[![Deploy GitHub Pages](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml)
 
 ## Deployment
 
@@ -112,12 +113,12 @@ The conceptual model and simulation approach draw on peer-reviewed literature in
 
 The app uses no patient data, cookies, analytics, advertising, accounts, backend, or database. Imported JSON is size-limited and reconstructed field-by-field; unknown content is never merged into application objects or rendered as HTML. Scenario names are formula-escaped in CSV exports. See [SECURITY.md](./SECURITY.md) for reporting guidance.
 
-## Attribution
+## Citation
 
-Created by Alexander Krawec and published at [ALEXKDOT/ed-throughput-sandbox](https://github.com/ALEXKDOT/ed-throughput-sandbox). Machine-readable citation metadata is available in [CITATION.cff](./CITATION.cff).
+Published by Alexander Krawec at [ALEXKDOT/ed-throughput-sandbox](https://github.com/ALEXKDOT/ed-throughput-sandbox). Machine-readable citation metadata is available in [CITATION.cff](./CITATION.cff).
 
 ## License and disclaimer
 
 MIT licensed; see [LICENSE](./LICENSE).
 
-> This application is an educational systems-modeling project. It uses synthetic inputs and simplified assumptions, is not calibrated to any institution, and should not be used for staffing, clinical, regulatory, or operational decisions.
+> This application is an educational systems-modeling project. It uses synthetic inputs and simplified assumptions, has not been calibrated or validated to any institution, and has measured no patient or operational impact. It should not be used for staffing, clinical, regulatory, or operational decisions.

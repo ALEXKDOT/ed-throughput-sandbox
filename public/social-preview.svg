@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
   <title id="title">ED Throughput Sandbox</title>
-  <desc id="desc">A restrained clinical operations graphic showing input, throughput, output, and a 24-hour flow trace.</desc>
+  <desc id="desc">A restrained educational simulation graphic showing input, throughput, output, and a 24-hour flow trace under synthetic assumptions.</desc>
   <rect width="1280" height="640" fill="#f4f7f9"/>
   <rect x="54" y="54" width="1172" height="532" rx="18" fill="#fff" stroke="#cad5dc" stroke-width="2"/>
   <g transform="translate(94 92)">
@@ -32,6 +32,7 @@
       <text x="26" y="77" fill="#526874" font-size="16">Admission · boarding · flow</text>
     </g>
   </g>
+  <text x="94" y="466" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.3">EDUCATIONAL · SYNTHETIC ASSUMPTIONS · NO PATIENT DATA</text>
   <g transform="translate(94 482)">
     <path d="M0 38C60 36 81 32 133 36s86 18 135 13 74-26 126-25 81 38 143 31 82-42 139-37 79 48 139 38 95-38 149-29 76 26 136 19" fill="none" stroke="#075e73" stroke-width="5"/>
     <path d="M0 62h1086" stroke="#cad5dc" stroke-width="2"/>

@@ -15,6 +15,8 @@
     "url": "https://github.com/ALEXKDOT/ed-throughput-sandbox/issues"
   },
   "scripts": {
+    "assets:social": "node scripts/render-social-preview.mjs",
+    "assets:social:check": "node scripts/render-social-preview.mjs --check",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -41,6 +43,7 @@
     "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.62.1",
+    "@resvg/resvg-js": "2.6.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.6",
