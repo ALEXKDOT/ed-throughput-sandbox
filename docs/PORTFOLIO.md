@@ -1,6 +1,6 @@
 # Portfolio language
 
-All descriptions below are intentionally bounded. Replace author placeholders, but do not add claims of hospital adoption, patient impact, empirical forecasting accuracy, or measured operational improvement unless separately documented with evidence.
+All descriptions below are intentionally bounded. Attribution is resolved to Alexander Krawec; do not add claims of hospital adoption, patient impact, empirical forecasting accuracy, or measured operational improvement unless separately documented with evidence.
 
 ## 150-character description
 
