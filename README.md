@@ -4,6 +4,9 @@
 
 [Live demo](https://ALEXKDOT.github.io/ed-throughput-sandbox/) · [Model specification](./docs/MODEL.md) · [Validation plan](./docs/VALIDATION.md) · [Owner guide](./docs/OWNER_GUIDE.md)
 
+[![CI](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/ci.yml)
+[![Deploy GitHub Pages](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ALEXKDOT/ed-throughput-sandbox/actions/workflows/deploy-pages.yml)
+
 ![ED Throughput Sandbox showing synthetic assumptions and simulation results](./public/screenshots/app-desktop.png)
 
 ED Throughput Sandbox is a static, client-side educational application for testing operational hypotheses in a simplified emergency-department flow model. Users can change synthetic demand, acuity, capacity, treatment duration, admission, boarding, and fast-track assumptions; run repeated seeded simulations; and compare scenarios with uncertainty. No patient data, backend, accounts, telemetry, or institution-specific calibration are used.
