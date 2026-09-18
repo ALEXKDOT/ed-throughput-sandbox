@@ -11,6 +11,7 @@ import {
   layoutZoneEntities,
   zoneGeometry,
 } from '../visualizer/mapLayout';
+import { rebalanceEsiMix } from '../visualizer/scenarioEditing';
 
 function syntheticPatient(
   id: number,
@@ -51,6 +52,26 @@ describe('Visualizer workspace', () => {
     await user.clear(rooms);
     await user.type(rooms, '22');
     expect(rooms).toHaveValue(22);
+  });
+
+  it('exposes ESI, stage-time, pathway, admission, and diagnostic assumptions', async () => {
+    const user = userEvent.setup();
+    render(<VisualizerApp onOpenSandbox={vi.fn()} />);
+    await user.click(screen.getByText('Advanced clinical-flow assumptions'));
+
+    expect(screen.getByLabelText('ESI 3 share, percent')).toHaveValue(43);
+    expect(screen.getByLabelText('ESI 3 initial treatment median, minutes')).toHaveValue(125);
+    expect(screen.getByLabelText('ESI 3 admission probability, percent')).toHaveValue(22);
+    expect(screen.getByLabelText('Abdominal care-time multiplier')).toHaveValue(1);
+    expect(screen.getByLabelText('Lab median, minutes')).toHaveValue(48);
+    expect(screen.getByLabelText('Abdominal CT order, percent')).toHaveValue(46);
+    expect(screen.getByText('Balanced')).toBeVisible();
+  });
+
+  it('rebalances ESI shares without changing their total', () => {
+    const changed = rebalanceEsiMix({ 1: 0.03, 2: 0.16, 3: 0.43, 4: 0.3, 5: 0.08 }, 3, 50);
+    expect(changed[3]).toBe(0.5);
+    expect(Object.values(changed).reduce((sum, value) => sum + value, 0)).toBeCloseTo(1, 12);
   });
 
   it('offers a persistent reduced-motion control', async () => {

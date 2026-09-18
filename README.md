@@ -7,7 +7,7 @@ An interactive, browser-based discrete-event simulation with two complementary w
 - Configure synthetic arrivals, acuity, treatment spaces, care duration, admission, boarding, and low-acuity fast-track assumptions.
 - Run seeded Monte Carlo replications and inspect medians with 10th–90th percentile simulation intervals.
 - Compare paired A/B scenarios, explore one-at-a-time sensitivity, and share or export assumptions and results.
-- Replay a representative synthetic week with actual ESI 1–5, individual resources, diagnostic queues, uncapped waiting and boarding census, exact scrubbing, patient journeys, resource inspection, and synchronized A/B maps.
+- Replay a representative synthetic week with actual ESI 1–5, individual resources, diagnostic queues, uncapped waiting and boarding census, exact scrubbing, patient journeys, resource inspection, synchronized A/B maps, and editable stage-level clinical-flow assumptions.
 
 > **Synthetic-model disclaimer:** This educational systems-modeling project uses illustrative synthetic assumptions and no patient data. It has not been calibrated or validated to any institution, has measured no patient or operational impact, and must not be used for clinical, staffing, regulatory, or operational decisions.
 
@@ -36,7 +36,7 @@ The public **Sandbox** continues to use the documented model/schema v1. The newl
 
 Simultaneous events are processed deterministically: boarding completions, treatment completions, arrivals, then one exhaustive dispatch. The simulator never preempts treatment, models clinical deterioration, or separates clinicians, diagnostics, inpatient beds, transport, environmental services, or specialty placement. Read [docs/MODEL.md](./docs/MODEL.md) for the normative contract.
 
-Visualizer v2 adds five-level ESI, walk-in/ambulance arrivals, individual treatment and diagnostic resources, physical location independent from concurrent statuses, room reservation during imaging, an uncapped boarding census with finite off-room spaces and treatment-space fallback, synthetic rare exits, a seven-day trace, and representative-replication selection. It remains an illustrative synthetic model with no staffing or institution calibration. Read [docs/MODEL_V2.md](./docs/MODEL_V2.md) for its separate normative contract.
+Visualizer v2 adds five-level ESI, walk-in/ambulance arrivals, individual treatment and diagnostic resources, editable ESI/pathway/stage assumptions, a pre-run diagnostic-capacity warning, physical location independent from concurrent statuses, room reservation during imaging, an uncapped boarding census with finite off-room spaces and treatment-space fallback, synthetic rare exits, a seven-day trace, and representative-replication selection. It remains an illustrative synthetic model with no staffing or institution calibration. Read [docs/MODEL_V2.md](./docs/MODEL_V2.md) for its separate normative contract.
 
 ## Run locally
 

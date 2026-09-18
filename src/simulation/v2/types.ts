@@ -3,6 +3,12 @@ export type EsiLevel = (typeof ESI_LEVELS)[number];
 
 export type ArrivalMode = 'walkIn' | 'ambulance';
 export type PathwayKind = 'minorInjury' | 'medical' | 'abdominal' | 'behavioralHealth';
+export const PATHWAY_KINDS: readonly PathwayKind[] = [
+  'minorInjury',
+  'medical',
+  'abdominal',
+  'behavioralHealth',
+];
 export type Disposition = 'discharge' | 'admit' | 'transfer' | 'lwbs' | 'lbtc' | 'elope' | 'death';
 
 export type LocationKind =
@@ -121,6 +127,17 @@ export interface DurationConfigV2 {
   globalScale: number;
 }
 
+export interface DiagnosticProbabilityConfigV2 {
+  labByPathway: Record<PathwayKind, number>;
+  xrayMinorInjury: number;
+  ctMedicalHighAcuity: number;
+  ctMedicalOther: number;
+  ctAbdominal: number;
+  ultrasoundAbdominal: number;
+  mriMedical: number;
+  mriBehavioralHealth: number;
+}
+
 export type InterventionActionV2 =
   | { kind: 'addCapacity'; capacity: CapacityKeyV2; count: number }
   | { kind: 'scaleArrivals'; multiplier: number }
@@ -147,6 +164,8 @@ export interface ScenarioConfigV2 {
   demand: DemandConfigV2;
   capacities: VisualizerCapacitiesV2;
   durations: DurationConfigV2;
+  pathwayTreatmentMultipliers: Record<PathwayKind, number>;
+  diagnosticProbabilities: DiagnosticProbabilityConfigV2;
   admissionRates: EsiValuesV2;
   interventions: ScheduledInterventionV2[];
 }

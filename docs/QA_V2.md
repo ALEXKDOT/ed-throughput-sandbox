@@ -2,7 +2,7 @@
 
 ## Release status
 
-This record covers the separate **Visualizer** workspace and model/schema v2. The first automated implementation-conformance gate passed on 2026-09-14; the overload-visibility revision passed the complete gate on 2026-09-17. The model remains synthetic and unvalidated for real operational use.
+This record covers the separate **Visualizer** workspace and model/schema v2. The first automated implementation-conformance gate passed on 2026-09-14; the overload-visibility and assumption-control revisions passed complete gates on 2026-09-17. The model remains synthetic and unvalidated for real operational use.
 
 ## Verified release gates
 
@@ -13,8 +13,8 @@ The following checks were run against the release source:
 | Formatting                      | Passed with no changes required after the final source edits          |
 | ESLint                          | Passed with zero warnings allowed                                     |
 | Strict TypeScript build         | Passed                                                                |
-| Vitest                          | 96 tests passed across 11 files                                       |
-| Standard Vite production bundle | Passed; 626 client modules transformed                                |
+| Vitest                          | 104 tests passed across 11 files                                      |
+| Standard Vite production bundle | Passed; 628 client modules transformed                                |
 | Sites/Workers production bundle | Passed; emitted `dist/server/index.js` and the complete client bundle |
 | Current npm advisory audit      | Passed; zero known vulnerabilities reported                           |
 
@@ -70,6 +70,24 @@ The capacity-visibility revision removes the 24-patient waiting threshold, remov
 - disjoint resource and patient layout bands.
 
 The complete formatting, lint, strict TypeScript, 96-test, and production-build gate passed after these changes.
+
+## 2026-09-17 baseline-stability and assumption-control follow-up
+
+The baseline-stability revision changes the illustrative default from one CT/two lab processors to two CT/four lab processors and adds advanced controls for ESI mix, ESI treatment medians, admission probability, pathway treatment multipliers, stage medians, and diagnostic-order probability. A live diagnostic-capacity check flags approximate utilization at 85% and 100% thresholds before simulation.
+
+Added regression coverage verifies:
+
+- the revised fixed-seed baseline finishes the representative week with fewer than 50 patients waiting and departures above 90% of analysis arrivals;
+- the former two-processor laboratory setup exceeds 100% approximate load and is labeled overloaded;
+- pathway diagnostic probabilities change generated orders deterministically;
+- pathway treatment-time multipliers change simulated length of stay;
+- early schema-v2 setups migrate to the new assumption fields and revised exact legacy CT/lab pair;
+- invalid advanced probabilities and multipliers are rejected;
+- every new assumption family appears in the A/B change inventory;
+- ESI share editing preserves a normalized 100% mix; and
+- advanced controls render with the documented default values.
+
+The complete formatting, zero-warning lint, strict TypeScript, 104-test, standard production build, and Sites/Workers production build gate passed after these changes.
 
 ## Evidence not claimed
 

@@ -1,8 +1,10 @@
 import { normalizeProfile } from '../../presets/profiles';
 import type {
   CapacityKeyV2,
+  DiagnosticProbabilityConfigV2,
   LocationDefinitionV2,
   LocationKind,
+  PathwayKind,
   ResourceKind,
   ResourceUnitV2,
   ScenarioConfigV2,
@@ -157,11 +159,11 @@ export const DEFAULT_VISUALIZER_SCENARIO: ScenarioConfigV2 = {
     traumaBays: 2,
     observationBeds: 0,
     behavioralHealthBeds: 4,
-    ctScanners: 1,
+    ctScanners: 2,
     mriScanners: 1,
     xrayRooms: 2,
     ultrasoundRooms: 1,
-    labProcessors: 2,
+    labProcessors: 4,
     dischargeSeats: 6,
     boardingBeds: 8,
   },
@@ -178,6 +180,27 @@ export const DEFAULT_VISUALIZER_SCENARIO: ScenarioConfigV2 = {
     boardingMedian: 260,
     variability: 0.55,
     globalScale: 1,
+  },
+  pathwayTreatmentMultipliers: {
+    minorInjury: 1,
+    medical: 1,
+    abdominal: 1,
+    behavioralHealth: 1,
+  },
+  diagnosticProbabilities: {
+    labByPathway: {
+      minorInjury: 0.12,
+      medical: 0.7,
+      abdominal: 0.86,
+      behavioralHealth: 0.32,
+    },
+    xrayMinorInjury: 0.68,
+    ctMedicalHighAcuity: 0.52,
+    ctMedicalOther: 0.3,
+    ctAbdominal: 0.46,
+    ultrasoundAbdominal: 0.34,
+    mriMedical: 0.045,
+    mriBehavioralHealth: 0.045,
   },
   admissionRates: { 1: 0.7, 2: 0.46, 3: 0.22, 4: 0.07, 5: 0.015 },
   interventions: [],
@@ -198,11 +221,69 @@ export function cloneVisualizerScenario(scenario: ScenarioConfigV2): ScenarioCon
       ...scenario.durations,
       treatmentMedianByEsi: { ...scenario.durations.treatmentMedianByEsi },
     },
+    pathwayTreatmentMultipliers: { ...scenario.pathwayTreatmentMultipliers },
+    diagnosticProbabilities: {
+      ...scenario.diagnosticProbabilities,
+      labByPathway: { ...scenario.diagnosticProbabilities.labByPathway },
+    },
     admissionRates: { ...scenario.admissionRates },
     interventions: scenario.interventions.map((intervention) => ({
       ...intervention,
       actions: intervention.actions.map((action) => ({ ...action })),
     })),
+  };
+}
+
+/** Adds fields introduced within schema v2 so saved and exported v2.1 scenarios remain usable. */
+export function migrateVisualizerScenarioV2(input: unknown): unknown {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+  const candidate = input as Record<string, unknown>;
+  const predatesAdvancedAssumptions =
+    candidate.pathwayTreatmentMultipliers == null && candidate.diagnosticProbabilities == null;
+  const capacities =
+    typeof candidate.capacities === 'object' &&
+    candidate.capacities !== null &&
+    !Array.isArray(candidate.capacities)
+      ? (candidate.capacities as Partial<VisualizerCapacitiesV2>)
+      : undefined;
+  const pathwayTreatmentMultipliers =
+    typeof candidate.pathwayTreatmentMultipliers === 'object' &&
+    candidate.pathwayTreatmentMultipliers !== null &&
+    !Array.isArray(candidate.pathwayTreatmentMultipliers)
+      ? (candidate.pathwayTreatmentMultipliers as Partial<Record<PathwayKind, number>>)
+      : {};
+  const diagnosticProbabilities =
+    typeof candidate.diagnosticProbabilities === 'object' &&
+    candidate.diagnosticProbabilities !== null &&
+    !Array.isArray(candidate.diagnosticProbabilities)
+      ? (candidate.diagnosticProbabilities as Partial<DiagnosticProbabilityConfigV2>)
+      : {};
+  const labByPathway =
+    typeof diagnosticProbabilities.labByPathway === 'object' &&
+    diagnosticProbabilities.labByPathway !== null &&
+    !Array.isArray(diagnosticProbabilities.labByPathway)
+      ? diagnosticProbabilities.labByPathway
+      : {};
+
+  return {
+    ...candidate,
+    ...(predatesAdvancedAssumptions &&
+    capacities?.ctScanners === 1 &&
+    capacities.labProcessors === 2
+      ? { capacities: { ...capacities, ctScanners: 2, labProcessors: 4 } }
+      : {}),
+    pathwayTreatmentMultipliers: {
+      ...DEFAULT_VISUALIZER_SCENARIO.pathwayTreatmentMultipliers,
+      ...pathwayTreatmentMultipliers,
+    },
+    diagnosticProbabilities: {
+      ...DEFAULT_VISUALIZER_SCENARIO.diagnosticProbabilities,
+      ...diagnosticProbabilities,
+      labByPathway: {
+        ...DEFAULT_VISUALIZER_SCENARIO.diagnosticProbabilities.labByPathway,
+        ...labByPathway,
+      },
+    },
   };
 }
 

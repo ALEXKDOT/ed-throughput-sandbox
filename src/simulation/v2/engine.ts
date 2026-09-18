@@ -33,7 +33,7 @@ import {
   type VisualizerCapacitiesV2,
 } from './types';
 
-export const V2_ENGINE_VERSION = `edts-model-v2.1 | ${V2_RNG_VERSION} | trace-v2.1`;
+export const V2_ENGINE_VERSION = `edts-model-v2.2 | ${V2_RNG_VERSION} | trace-v2.2`;
 const SERIES_MINUTES = 60;
 
 const LWBS_PROBABILITY_BY_ESI: Record<EsiLevel, number> = {
@@ -173,20 +173,29 @@ function buildDiagnostics(
     keyedUniform(scenario.seed, replication, id, 'diagnostics', index),
   );
   const values: DiagnosticService[] = [];
-  const labProbability =
-    pathway === 'abdominal'
-      ? 0.86
-      : pathway === 'medical'
-        ? 0.7
-        : pathway === 'behavioralHealth'
-          ? 0.32
-          : 0.12;
+  const probabilities = scenario.diagnosticProbabilities;
+  const labProbability = probabilities.labByPathway[pathway];
   if (draws[0]! < labProbability) values.push('lab');
-  if (pathway === 'minorInjury' && draws[1]! < 0.68) values.push('xray');
-  if (pathway === 'medical' && draws[2]! < (esi <= 2 ? 0.52 : 0.3)) values.push('ct');
-  if (pathway === 'abdominal' && draws[3]! < 0.46) values.push('ct');
-  if (pathway === 'abdominal' && draws[4]! < 0.34) values.push('ultrasound');
-  if ((pathway === 'medical' || pathway === 'behavioralHealth') && draws[5]! < 0.045) {
+  if (pathway === 'minorInjury' && draws[1]! < probabilities.xrayMinorInjury) {
+    values.push('xray');
+  }
+  if (
+    pathway === 'medical' &&
+    draws[2]! < (esi <= 2 ? probabilities.ctMedicalHighAcuity : probabilities.ctMedicalOther)
+  ) {
+    values.push('ct');
+  }
+  if (pathway === 'abdominal' && draws[3]! < probabilities.ctAbdominal) values.push('ct');
+  if (pathway === 'abdominal' && draws[4]! < probabilities.ultrasoundAbdominal) {
+    values.push('ultrasound');
+  }
+  const mriProbability =
+    pathway === 'medical'
+      ? probabilities.mriMedical
+      : pathway === 'behavioralHealth'
+        ? probabilities.mriBehavioralHealth
+        : 0;
+  if (draws[5]! < mriProbability) {
     values.push('mri');
   }
   return values;
@@ -560,7 +569,10 @@ export function runReplicationV2(
   ) => {
     patient.activeServiceResourceId = resource.id;
     markPatient(patient);
-    const multiplier = serviceMultiplier(service) * (service === 'boarding' ? boardingScale : 1);
+    const pathwayMultiplier =
+      service === 'initialTreatment' ? scenario.pathwayTreatmentMultipliers[patient.pathway] : 1;
+    const multiplier =
+      serviceMultiplier(service) * (service === 'boarding' ? boardingScale : 1) * pathwayMultiplier;
     const duration = sampleServiceMinutes(
       scenario,
       replication,
@@ -1183,7 +1195,7 @@ export function runReplicationV2(
     trace = {
       schemaVersion: 2,
       modelVersion: 'edts-model-v2',
-      traceVersion: 'trace-v2.1',
+      traceVersion: 'trace-v2.2',
       scenarioName: scenario.name,
       scenarioDigest: shortDigest(scenario),
       seed: scenario.seed,

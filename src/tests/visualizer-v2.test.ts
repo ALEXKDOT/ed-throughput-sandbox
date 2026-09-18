@@ -5,6 +5,7 @@ import {
   demandIsPairedV2,
   pairedDeltasV2,
 } from '../simulation/v2/aggregate';
+import { diagnosticCapacityEstimatesV2 } from '../simulation/v2/capacityAnalysis';
 import { DEFAULT_VISUALIZER_SCENARIO, cloneVisualizerScenario } from '../simulation/v2/defaults';
 import { generatePatientBlueprintsV2, runReplicationV2 } from '../simulation/v2/engine';
 import { visualizerResultsCsv } from '../simulation/v2/export';
@@ -125,10 +126,10 @@ describe('model v2 engine', () => {
     const after = snapshotAtV2(trace, 300);
     expect(
       Object.values(before.resources).filter((resource) => resource.kind === 'ctScanner'),
-    ).toHaveLength(1);
+    ).toHaveLength(scenario.capacities.ctScanners);
     expect(
       Object.values(after.resources).filter((resource) => resource.kind === 'ctScanner'),
-    ).toHaveLength(2);
+    ).toHaveLength(scenario.capacities.ctScanners + 1);
   });
 
   it('completes the full representative-week horizon without a patient-display ceiling', () => {
@@ -136,6 +137,51 @@ describe('model v2 engine', () => {
     expect(result.series.at(-1)?.minute).toBe(7 * 24 * 60);
     expect(result.diagnostics.maxActivePatients).toBeGreaterThan(0);
     expect(result.diagnostics.conservationValid).toBe(true);
+  });
+
+  it('ships a baseline whose diagnostic capacity does not create a runaway waiting queue', () => {
+    const result = runReplicationV2(DEFAULT_VISUALIZER_SCENARIO, 31);
+    const final = result.series.at(-1)!;
+    expect(final.waiting).toBeLessThan(50);
+    expect(result.metrics.values.departures).toBeGreaterThan(result.metrics.arrivals * 0.9);
+
+    const loads = diagnosticCapacityEstimatesV2(DEFAULT_VISUALIZER_SCENARIO);
+    expect(loads.find((load) => load.key === 'lab')!.utilization).toBeLessThan(0.85);
+    expect(loads.find((load) => load.key === 'ct')!.utilization).toBeLessThan(0.85);
+  });
+
+  it('flags the former two-processor lab baseline as structurally overloaded', () => {
+    const unstable = cloneVisualizerScenario(DEFAULT_VISUALIZER_SCENARIO);
+    unstable.capacities.labProcessors = 2;
+    const lab = diagnosticCapacityEstimatesV2(unstable).find((load) => load.key === 'lab')!;
+    expect(lab.utilization).toBeGreaterThan(1);
+    expect(lab.pressure).toBe('overloaded');
+  });
+
+  it('uses configurable pathway-specific diagnostic probabilities', () => {
+    const noLabs = shortScenario();
+    const allLabs = cloneVisualizerScenario(noLabs);
+    for (const pathway of ['minorInjury', 'medical', 'abdominal', 'behavioralHealth'] as const) {
+      noLabs.diagnosticProbabilities.labByPathway[pathway] = 0;
+      allLabs.diagnosticProbabilities.labByPathway[pathway] = 1;
+    }
+    const without = generatePatientBlueprintsV2(noLabs, 0);
+    const withLabs = generatePatientBlueprintsV2(allLabs, 0);
+    expect(without.every((patient) => !patient.diagnostics.includes('lab'))).toBe(true);
+    expect(withLabs.every((patient) => patient.diagnostics.includes('lab'))).toBe(true);
+  });
+
+  it('applies pathway-specific initial-treatment multipliers', () => {
+    const baseline = shortScenario();
+    const slower = cloneVisualizerScenario(baseline);
+    for (const pathway of ['minorInjury', 'medical', 'abdominal', 'behavioralHealth'] as const) {
+      slower.pathwayTreatmentMultipliers[pathway] = 2;
+    }
+    const baselineResult = runReplicationV2(baseline, 2);
+    const slowerResult = runReplicationV2(slower, 2);
+    expect(slowerResult.metrics.values.lengthOfStay).toBeGreaterThan(
+      baselineResult.metrics.values.lengthOfStay!,
+    );
   });
 
   it('lets room-blocking boarders depart when off-room boarding capacity is zero', () => {
@@ -384,6 +430,20 @@ describe('model v2 validation', () => {
     expect(validateScenarioV2(scenario)).toMatchObject({ ok: false });
   });
 
+  it('migrates saved schema-v2 scenarios that predate advanced assumptions', () => {
+    const legacy = structuredClone(shortScenario()) as unknown as Record<string, unknown>;
+    delete legacy.pathwayTreatmentMultipliers;
+    delete legacy.diagnosticProbabilities;
+    const validated = validateScenarioV2(legacy);
+    expect(validated.ok).toBe(true);
+    if (validated.ok) {
+      expect(validated.value.pathwayTreatmentMultipliers.medical).toBe(1);
+      expect(validated.value.diagnosticProbabilities.labByPathway.medical).toBe(0.7);
+      expect(validated.value.capacities.ctScanners).toBe(2);
+      expect(validated.value.capacities.labProcessors).toBe(4);
+    }
+  });
+
   it('rejects incomplete objects and reconstructs known fields only', () => {
     expect(validateScenarioV2({ schemaVersion: 2 })).toMatchObject({ ok: false });
     const candidate = {
@@ -397,6 +457,16 @@ describe('model v2 validation', () => {
       expect(validated.value).not.toHaveProperty('unexpected');
       expect(validated.value.demand).not.toHaveProperty('ignored');
     }
+  });
+
+  it('validates the advanced timing and diagnostic assumptions', () => {
+    const invalidProbability = shortScenario();
+    invalidProbability.diagnosticProbabilities.ctAbdominal = 1.1;
+    expect(validateScenarioV2(invalidProbability)).toMatchObject({ ok: false });
+
+    const invalidMultiplier = shortScenario();
+    invalidMultiplier.pathwayTreatmentMultipliers.behavioralHealth = 4.1;
+    expect(validateScenarioV2(invalidMultiplier)).toMatchObject({ ok: false });
   });
 
   it('rejects unreachable resources, terminal interventions, and cumulative limit bypasses', () => {
@@ -453,6 +523,8 @@ describe('model v2 validation', () => {
     changed.durations.mriMedian += 5;
     changed.durations.treatmentMedianByEsi[2] += 5;
     changed.admissionRates[3] += 0.01;
+    changed.pathwayTreatmentMultipliers.abdominal = 1.2;
+    changed.diagnosticProbabilities.ctAbdominal = 0.6;
     const changes = changedAssumptionsV2(baseline, changed).join('\n');
     expect(changes).toContain('Hourly arrival pattern');
     expect(changes).toContain('ESI mix');
@@ -461,6 +533,8 @@ describe('model v2 validation', () => {
     expect(changes).toContain('Median MRI time');
     expect(changes).toContain('ESI 2 median treatment time');
     expect(changes).toContain('ESI 3 admission probability');
+    expect(changes).toContain('Pathway treatment-time assumptions');
+    expect(changes).toContain('Diagnostic-order probabilities');
   });
 
   it('formats the simulation endpoint without wrapping back to day one', () => {

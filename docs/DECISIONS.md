@@ -76,6 +76,14 @@ This log records consequential product, model, and engineering choices. D-001 th
 
 **Reason.** A queue threshold distorted both the visual story and its derived patient-hours metric. An infinite virtual boarding resource would erase the very treatment-space blocking that makes boarding a throughput bottleneck. Unbounded census plus finite physical resources represents overload without either artificial cap.
 
+### D-026 — Stabilize the illustrative baseline and expose the assumptions that create LOS
+
+**Decision.** Change the synthetic baseline from one CT scanner and two lab processors to two CT scanners and four lab processors. Add editable ESI mix, ESI-specific initial-treatment medians, ESI admission probabilities, pathway treatment-time multipliers, stage medians, and pathway-specific diagnostic-order probabilities. Show an approximate diagnostic utilization warning before a run. Continue deriving total ED length of stay instead of adding a direct LOS input.
+
+**Alternatives considered.** Keep the overloaded defaults; cap the waiting queue; shorten all care with one opaque global factor; or let users enter a target LOS directly.
+
+**Reason.** A same-seed diagnostic showed the former lab setup had demand materially above modeled capacity, so backlog growth was a mathematical consequence rather than a useful baseline. The revised defaults clear the representative week while still allowing users to recreate severe overload. Stage-level controls explain which mechanism changes and avoid double-counting that a direct LOS target would introduce. Saved early-v2 scenarios receive the revised CT/lab defaults only when they lack the new advanced-assumption fields and still contain the exact former one/two capacity pair.
+
 ## D-001 — Educational hypothesis sandbox, not forecasting product
 
 **Decision.** Position the application as a synthetic systems-learning tool. Exclude patient-level input, institution calibration, operational recommendations, causal claims, and clinical decision support.

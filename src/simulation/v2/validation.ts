@@ -1,4 +1,10 @@
-import { ESI_LEVELS, type ScenarioConfigV2, type VisualizerCapacitiesV2 } from './types';
+import { migrateVisualizerScenarioV2 } from './defaults';
+import {
+  ESI_LEVELS,
+  PATHWAY_KINDS,
+  type ScenarioConfigV2,
+  type VisualizerCapacitiesV2,
+} from './types';
 
 export type ValidationResultV2 =
   { ok: true; value: ScenarioConfigV2 } | { ok: false; error: string };
@@ -68,7 +74,7 @@ export function validateScenarioV2(input: unknown): ValidationResultV2 {
     if (typeof input !== 'object' || input === null || Array.isArray(input)) {
       return { ok: false, error: 'Visualizer scenario must be a JSON object.' };
     }
-    const value = input as ScenarioConfigV2;
+    const value = migrateVisualizerScenarioV2(input) as ScenarioConfigV2;
     if (value.schemaVersion !== 2 || value.modelVersion !== 'edts-model-v2') {
       return { ok: false, error: 'This is not a model-v2 visualizer scenario.' };
     }
@@ -170,6 +176,26 @@ export function validateScenarioV2(input: unknown): ValidationResultV2 {
     }
     if (!finiteInRange(value.durations.globalScale, 0.25, 4)) {
       return { ok: false, error: 'Care-duration scale must be between 0.25 and 4.' };
+    }
+    if (
+      PATHWAY_KINDS.some(
+        (pathway) => !finiteInRange(value.pathwayTreatmentMultipliers[pathway], 0.25, 4),
+      )
+    ) {
+      return { ok: false, error: 'Pathway treatment-time multipliers must be between 0.25 and 4.' };
+    }
+    const diagnosticProbabilities = [
+      ...PATHWAY_KINDS.map((pathway) => value.diagnosticProbabilities.labByPathway[pathway]),
+      value.diagnosticProbabilities.xrayMinorInjury,
+      value.diagnosticProbabilities.ctMedicalHighAcuity,
+      value.diagnosticProbabilities.ctMedicalOther,
+      value.diagnosticProbabilities.ctAbdominal,
+      value.diagnosticProbabilities.ultrasoundAbdominal,
+      value.diagnosticProbabilities.mriMedical,
+      value.diagnosticProbabilities.mriBehavioralHealth,
+    ];
+    if (diagnosticProbabilities.some((probability) => !finiteInRange(probability, 0, 1))) {
+      return { ok: false, error: 'Diagnostic-order probabilities must be from 0% to 100%.' };
     }
     if (ESI_LEVELS.some((esi) => !finiteInRange(value.admissionRates[esi], 0, 1))) {
       return { ok: false, error: 'Admission probabilities must be from 0% to 100%.' };
@@ -349,6 +375,24 @@ export function validateScenarioV2(input: unknown): ValidationResultV2 {
         boardingMedian: value.durations.boardingMedian,
         variability: value.durations.variability,
         globalScale: value.durations.globalScale,
+      },
+      pathwayTreatmentMultipliers: Object.fromEntries(
+        PATHWAY_KINDS.map((pathway) => [pathway, value.pathwayTreatmentMultipliers[pathway]]),
+      ) as ScenarioConfigV2['pathwayTreatmentMultipliers'],
+      diagnosticProbabilities: {
+        labByPathway: Object.fromEntries(
+          PATHWAY_KINDS.map((pathway) => [
+            pathway,
+            value.diagnosticProbabilities.labByPathway[pathway],
+          ]),
+        ) as ScenarioConfigV2['diagnosticProbabilities']['labByPathway'],
+        xrayMinorInjury: value.diagnosticProbabilities.xrayMinorInjury,
+        ctMedicalHighAcuity: value.diagnosticProbabilities.ctMedicalHighAcuity,
+        ctMedicalOther: value.diagnosticProbabilities.ctMedicalOther,
+        ctAbdominal: value.diagnosticProbabilities.ctAbdominal,
+        ultrasoundAbdominal: value.diagnosticProbabilities.ultrasoundAbdominal,
+        mriMedical: value.diagnosticProbabilities.mriMedical,
+        mriBehavioralHealth: value.diagnosticProbabilities.mriBehavioralHealth,
       },
       admissionRates: Object.fromEntries(
         ESI_LEVELS.map((esi) => [esi, value.admissionRates[esi]]),

@@ -23,6 +23,7 @@ The public bundle did not expose a source map or full authored source tree. Arch
 | Resource inspection                                      | **Adapt**                 | Individual room/bed/machine state, ownership, queue, reservation, and occupant; no staff inspector                                                                                          | Appropriate to current no-staffing scope                                                 |
 | Schematic operational map                                | **Adapt**                 | Institution-neutral SVG map, individual resources, adaptive aligned grids for every active ESI-colored patient, locked inpatient placeholder                                                | Familiar enough to reason about, without implying a real floorplan                       |
 | Quick scenario levers                                    | **Adopt with disclosure** | Demand, main rooms, additive fast track, hallway, care duration, CT, lab, boarding, and inpatient delay; every lever explains its exact modeled effect                                      | Fast experimentation remains auditable                                                   |
+| Advanced assumption editor                               | **Strengthen**            | Editable ESI mix, ESI care medians and admission rates, pathway multipliers, stage times, diagnostic-order probabilities, and a pre-run capacity-pressure check                             | Makes LOS-generating mechanisms visible without inventing a direct LOS target            |
 | Baseline/intervention comparison                         | **Strengthen**            | Same seed/window, patient-keyed random streams, time-synchronized A/B replay, exhaustive changed-assumption list, within-replication deltas, demand-pairing warning                         | More defensible than visually comparing unrelated days                                   |
 | Queue and capacity visibility                            | **Adapt**                 | Waiting and boarding census are uncapped and fully visible; finite care/off-room resources remain individually inspectable, and room-holding boarders stay explicit                         | Shows severe bottlenecks without inventing a queue-capacity ceiling                      |
 | Rich results explorer                                    | **Adopt**                 | Eight ensemble metrics, paired deltas, hourly uncertainty band, selected representative provenance, CSV comparison report                                                                   | Connects “what happened” to “how variable was it?”                                       |
@@ -65,7 +66,7 @@ Future prompts can use these stable feature IDs:
 - **VIZ-01:** saved bookmarks with user annotations;
 - **VIZ-02:** scheduled open/close/capacity intervention editor;
 - **VIZ-03:** active observation pathway;
-- **VIZ-04:** richer complaint/pathway editor;
+- **VIZ-04:** richer complaint/pathway taxonomy and routing editor beyond the current timing and diagnostic-probability controls;
 - **VIZ-05:** generic drag/drop layout authoring;
 - **VIZ-06:** exportable printable comparison narrative;
 - **VIZ-07:** institution configuration package and validation workflow; and

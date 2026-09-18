@@ -65,7 +65,7 @@ export function aggregateReplicationsV2(
   });
   return {
     scenario,
-    algorithmVersion: 'edts-model-v2.1 | aggregate-v2.1',
+    algorithmVersion: 'edts-model-v2.2 | aggregate-v2.2',
     replicationCount: replications.length,
     metrics,
     series,
@@ -191,6 +191,14 @@ export function changedAssumptionsV2(a: ScenarioConfigV2, b: ScenarioConfigV2): 
         `ESI ${esi} admission probability: ${(a.admissionRates[esi] * 100).toFixed(1)}% → ${(b.admissionRates[esi] * 100).toFixed(1)}%`,
       );
     }
+  }
+  if (
+    JSON.stringify(a.pathwayTreatmentMultipliers) !== JSON.stringify(b.pathwayTreatmentMultipliers)
+  ) {
+    changes.push('Pathway treatment-time assumptions differ');
+  }
+  if (JSON.stringify(a.diagnosticProbabilities) !== JSON.stringify(b.diagnosticProbabilities)) {
+    changes.push('Diagnostic-order probabilities differ');
   }
   if (JSON.stringify(a.interventions) !== JSON.stringify(b.interventions)) {
     changes.push('Scheduled interventions differ');
