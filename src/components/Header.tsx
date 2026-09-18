@@ -1,9 +1,10 @@
 interface HeaderProps {
   onMethodology: () => void;
   onSensitivity: () => void;
+  onVisualizer: () => void;
 }
 
-export function Header({ onMethodology, onSensitivity }: HeaderProps) {
+export function Header({ onMethodology, onSensitivity, onVisualizer }: HeaderProps) {
   const repositoryUrl = import.meta.env.VITE_REPOSITORY_URL;
   return (
     <>
@@ -17,6 +18,9 @@ export function Header({ onMethodology, onSensitivity }: HeaderProps) {
           <span>ED Throughput Sandbox</span>
         </a>
         <nav aria-label="Project navigation">
+          <button className="workspace-link" type="button" onClick={onVisualizer}>
+            Open Visualizer
+          </button>
           <button className="text-button" type="button" onClick={onSensitivity}>
             Sensitivity
           </button>

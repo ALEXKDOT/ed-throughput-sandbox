@@ -39,6 +39,14 @@ const SensitivityDialog = lazy(async () => {
   const module = await import('../features/sensitivity/SensitivityDialog');
   return { default: module.SensitivityDialog };
 });
+const VisualizerApp = lazy(async () => {
+  const module = await import('../visualizer/VisualizerApp');
+  return { default: module.VisualizerApp };
+});
+
+function isVisualizerHash(hash: string): boolean {
+  return hash === '#visualizer' || hash.startsWith('#visualizer-');
+}
 
 function defaultBundle(): ScenarioBundle {
   return {
@@ -126,11 +134,27 @@ export function App() {
   const [sensitivityAnnouncement, setSensitivityAnnouncement] = useState('');
   const [runError, setRunError] = useState<string>();
   const [importError, setImportError] = useState<string>();
+  const [workspace, setWorkspace] = useState<'sandbox' | 'visualizer'>(() =>
+    isVisualizerHash(window.location.hash) ? 'visualizer' : 'sandbox',
+  );
+  const [visualizerVisited, setVisualizerVisited] = useState(() =>
+    isVisualizerHash(window.location.hash),
+  );
   const workerRef = useRef<Worker | null>(null);
   const sensitivityWorkerRef = useRef<Worker | null>(null);
   const runIdRef = useRef('');
   const sensitivityRunIdRef = useRef('');
   const active = bundle.activeScenario;
+
+  useEffect(() => {
+    const syncWorkspace = () => {
+      const next = isVisualizerHash(window.location.hash) ? 'visualizer' : 'sandbox';
+      setWorkspace(next);
+      if (next === 'visualizer') setVisualizerVisited(true);
+    };
+    window.addEventListener('hashchange', syncWorkspace);
+    return () => window.removeEventListener('hashchange', syncWorkspace);
+  }, []);
 
   useEffect(() => {
     try {
@@ -531,164 +555,201 @@ export function App() {
     );
   };
 
+  const openWorkspace = (nextWorkspace: 'sandbox' | 'visualizer') => {
+    window.history.replaceState(
+      {},
+      '',
+      `${window.location.pathname}${window.location.search}${
+        nextWorkspace === 'visualizer' ? '#visualizer' : ''
+      }`,
+    );
+    if (nextWorkspace === 'visualizer') setVisualizerVisited(true);
+    setWorkspace(nextWorkspace);
+  };
+
   return (
-    <div className="app-shell">
-      <p className="sr-only" role="status" aria-atomic="true">
-        {runAnnouncement}
-      </p>
-      <p className="sr-only" role="status" aria-atomic="true">
-        {sensitivityAnnouncement}
-      </p>
-      <Header
-        onMethodology={() => setMethodologyOpen(true)}
-        onSensitivity={() => setSensitivityOpen(true)}
-      />
-      <ScenarioBar
-        bundle={bundle}
-        active={active}
-        comparisonMode={comparisonMode}
-        runState={runState}
-        progress={progress}
-        runningSlots={runTargets}
-        stale={stale}
-        hasResult={{ a: Boolean(results.a), b: Boolean(results.b) }}
-        onSelect={(slot) => setBundle((current) => ({ ...current, activeScenario: slot }))}
-        onRename={(name) => {
-          const safe = Array.from(name)
-            .filter((character) => {
-              const code = character.charCodeAt(0);
-              return code >= 32 && code !== 127;
-            })
-            .join('')
-            .slice(0, 48);
-          if (safe.trim()) updateActiveScenario({ ...bundle.scenarios[active], name: safe });
-        }}
-        onDuplicate={duplicate}
-        onSwap={swap}
-        onCompare={() => setComparisonMode((value) => !value)}
-        onRun={runSimulation}
-        onCancel={cancelRun}
-        onShare={share}
-        onExportJson={exportJson}
-        onImport={importJson}
-        onReset={() => {
-          if (
-            window.confirm(
-              `Reset Scenario ${active.toUpperCase()} to the balanced synthetic baseline? Its current assumptions will be replaced.`,
-            )
-          ) {
-            applyPreset('balanced');
-          }
-        }}
-      />
-      {startupNotice && (
-        <div className="persistent-alert persistent-alert--info" role="status">
-          <span>{startupNotice}</span>
-          <button type="button" onClick={() => setStartupNotice(undefined)}>
-            Dismiss
-          </button>
+    <>
+      {visualizerVisited && (
+        <div hidden={workspace !== 'visualizer'}>
+          <Suspense
+            fallback={
+              <div className="workspace-loading" role="status">
+                Opening the Visualizer…
+              </div>
+            }
+          >
+            <VisualizerApp
+              active={workspace === 'visualizer'}
+              onOpenSandbox={() => openWorkspace('sandbox')}
+            />
+          </Suspense>
         </div>
       )}
-      {importError && (
-        <div className="persistent-alert" role="alert">
-          <span>{importError}</span>
-          <button type="button" onClick={() => setImportError(undefined)}>
-            Dismiss
-          </button>
-        </div>
-      )}
-      <main id="main-content" className="workspace">
-        <AssumptionsPanel
-          scenario={bundle.scenarios[active]}
-          onChange={updateActiveScenario}
-          onGlobalSettings={updateGlobalSettings}
-          onPreset={applyPreset}
-          onNewSeed={newSeed}
-          running={runState === 'running'}
-        />
-        <ResultsDashboard
-          active={active}
-          results={results}
-          comparison={comparison}
-          comparisonMode={comparisonMode}
-          stale={comparisonMode && comparison ? stale.a || stale.b : stale[active]}
-          runState={runState}
-          runError={runError}
-          onRun={runSimulation}
-          onExportCsv={exportCsv}
-          onPrint={() => window.print()}
-        />
-      </main>
-      <footer className="site-footer">
-        <div>
-          <strong>ED Throughput Sandbox</strong>
-          <span>Open-source educational systems modeling</span>
-        </div>
-        <p>
-          This application is an educational systems-modeling project. It uses synthetic inputs and
-          simplified assumptions, is not calibrated to any institution, and should not be used for
-          staffing, clinical, regulatory, or operational decisions.
+      <div className="app-shell" hidden={workspace !== 'sandbox'}>
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
+        <a className="skip-link skip-link--results" href="#results-title">
+          Skip to results
+        </a>
+        <p className="sr-only" role="status" aria-atomic="true">
+          {runAnnouncement}
         </p>
-        <button type="button" className="text-button" onClick={() => setMethodologyOpen(true)}>
-          Read methodology and sources
-        </button>
-      </footer>
-      <div className="mobile-run-dock print-hidden">
-        <button
-          type="button"
-          className={runState === 'running' ? 'cancel-button' : 'primary-button'}
-          onClick={runState === 'running' ? cancelRun : runSimulation}
-        >
-          {runState === 'running'
-            ? `Cancel run · ${Math.round(progress * 100)}%`
-            : comparisonMode
-              ? 'Run both scenarios'
-              : `Run Scenario ${active.toUpperCase()}`}
-        </button>
-        {results[active] && runState !== 'running' && (
-          <a className="secondary-button" href="#results-title">
-            View results
-          </a>
+        <p className="sr-only" role="status" aria-atomic="true">
+          {sensitivityAnnouncement}
+        </p>
+        <Header
+          onMethodology={() => setMethodologyOpen(true)}
+          onSensitivity={() => setSensitivityOpen(true)}
+          onVisualizer={() => openWorkspace('visualizer')}
+        />
+        <ScenarioBar
+          bundle={bundle}
+          active={active}
+          comparisonMode={comparisonMode}
+          runState={runState}
+          progress={progress}
+          runningSlots={runTargets}
+          stale={stale}
+          hasResult={{ a: Boolean(results.a), b: Boolean(results.b) }}
+          onSelect={(slot) => setBundle((current) => ({ ...current, activeScenario: slot }))}
+          onRename={(name) => {
+            const safe = Array.from(name)
+              .filter((character) => {
+                const code = character.charCodeAt(0);
+                return code >= 32 && code !== 127;
+              })
+              .join('')
+              .slice(0, 48);
+            if (safe.trim()) updateActiveScenario({ ...bundle.scenarios[active], name: safe });
+          }}
+          onDuplicate={duplicate}
+          onSwap={swap}
+          onCompare={() => setComparisonMode((value) => !value)}
+          onRun={runSimulation}
+          onCancel={cancelRun}
+          onShare={share}
+          onExportJson={exportJson}
+          onImport={importJson}
+          onReset={() => {
+            if (
+              window.confirm(
+                `Reset Scenario ${active.toUpperCase()} to the balanced synthetic baseline? Its current assumptions will be replaced.`,
+              )
+            ) {
+              applyPreset('balanced');
+            }
+          }}
+        />
+        {startupNotice && (
+          <div className="persistent-alert persistent-alert--info" role="status">
+            <span>{startupNotice}</span>
+            <button type="button" onClick={() => setStartupNotice(undefined)}>
+              Dismiss
+            </button>
+          </div>
+        )}
+        {importError && (
+          <div className="persistent-alert" role="alert">
+            <span>{importError}</span>
+            <button type="button" onClick={() => setImportError(undefined)}>
+              Dismiss
+            </button>
+          </div>
+        )}
+        <main id="main-content" className="workspace">
+          <AssumptionsPanel
+            scenario={bundle.scenarios[active]}
+            onChange={updateActiveScenario}
+            onGlobalSettings={updateGlobalSettings}
+            onPreset={applyPreset}
+            onNewSeed={newSeed}
+            running={runState === 'running'}
+          />
+          <ResultsDashboard
+            active={active}
+            results={results}
+            comparison={comparison}
+            comparisonMode={comparisonMode}
+            stale={comparisonMode && comparison ? stale.a || stale.b : stale[active]}
+            runState={runState}
+            runError={runError}
+            onRun={runSimulation}
+            onExportCsv={exportCsv}
+            onPrint={() => window.print()}
+          />
+        </main>
+        <footer className="site-footer">
+          <div>
+            <strong>ED Throughput Sandbox</strong>
+            <span>Open-source educational systems modeling</span>
+          </div>
+          <p>
+            This application is an educational systems-modeling project. It uses synthetic inputs
+            and simplified assumptions, is not calibrated to any institution, and should not be used
+            for staffing, clinical, regulatory, or operational decisions.
+          </p>
+          <button type="button" className="text-button" onClick={() => setMethodologyOpen(true)}>
+            Read methodology and sources
+          </button>
+        </footer>
+        <div className="mobile-run-dock print-hidden">
+          <button
+            type="button"
+            className={runState === 'running' ? 'cancel-button' : 'primary-button'}
+            onClick={runState === 'running' ? cancelRun : runSimulation}
+          >
+            {runState === 'running'
+              ? `Cancel run · ${Math.round(progress * 100)}%`
+              : comparisonMode
+                ? 'Run both scenarios'
+                : `Run Scenario ${active.toUpperCase()}`}
+          </button>
+          {results[active] && runState !== 'running' && (
+            <a className="secondary-button" href="#results-title">
+              View results
+            </a>
+          )}
+        </div>
+        {toast && (
+          <div className="toast" role="status" aria-live="polite">
+            <span>{toast}</span>
+            <button type="button" onClick={() => setToast(undefined)} aria-label="Dismiss message">
+              ×
+            </button>
+          </div>
+        )}
+        <MethodologyDialog
+          open={methodologyOpen}
+          scenario={bundle.scenarios[active]}
+          onClose={() => setMethodologyOpen(false)}
+        />
+        {sensitivityOpen && (
+          <Suspense
+            fallback={
+              <div className="dialog-loading" role="status">
+                Opening sensitivity explorer…
+              </div>
+            }
+          >
+            <SensitivityDialog
+              open={sensitivityOpen}
+              status={sensitivityState}
+              progress={sensitivityProgress}
+              result={sensitivityResult}
+              resultStale={Boolean(
+                sensitivityResult &&
+                sensitivityResult.scenarioKey !== JSON.stringify(bundle.scenarios[active]),
+              )}
+              error={sensitivityError}
+              onClose={() => setSensitivityOpen(false)}
+              onRun={runSensitivity}
+              onCancel={cancelSensitivity}
+              onExport={exportSensitivity}
+            />
+          </Suspense>
         )}
       </div>
-      {toast && (
-        <div className="toast" role="status" aria-live="polite">
-          <span>{toast}</span>
-          <button type="button" onClick={() => setToast(undefined)} aria-label="Dismiss message">
-            ×
-          </button>
-        </div>
-      )}
-      <MethodologyDialog
-        open={methodologyOpen}
-        scenario={bundle.scenarios[active]}
-        onClose={() => setMethodologyOpen(false)}
-      />
-      {sensitivityOpen && (
-        <Suspense
-          fallback={
-            <div className="dialog-loading" role="status">
-              Opening sensitivity explorer…
-            </div>
-          }
-        >
-          <SensitivityDialog
-            open={sensitivityOpen}
-            status={sensitivityState}
-            progress={sensitivityProgress}
-            result={sensitivityResult}
-            resultStale={Boolean(
-              sensitivityResult &&
-              sensitivityResult.scenarioKey !== JSON.stringify(bundle.scenarios[active]),
-            )}
-            error={sensitivityError}
-            onClose={() => setSensitivityOpen(false)}
-            onRun={runSensitivity}
-            onCancel={cancelSensitivity}
-            onExport={exportSensitivity}
-          />
-        </Suspense>
-      )}
-    </div>
+    </>
   );
 }

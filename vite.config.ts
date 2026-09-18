@@ -1,7 +1,10 @@
+import { cloudflare } from '@cloudflare/vite-plugin';
+import { sites } from '@openai/sites-vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig(() => {
+  const isSitesBuild = process.env.SITES_BUILD === 'true';
   const siteUrl = (
     process.env.VITE_SITE_URL ?? 'https://ALEXKDOT.github.io/ed-throughput-sandbox/'
   ).replace(/\/?$/u, '/');
@@ -9,6 +12,7 @@ export default defineConfig(() => {
     base: process.env.GITHUB_ACTIONS ? '/ed-throughput-sandbox/' : '/',
     plugins: [
       react(),
+      ...(isSitesBuild ? [sites(), cloudflare()] : []),
       {
         name: 'absolute-social-metadata',
         transformIndexHtml(html) {

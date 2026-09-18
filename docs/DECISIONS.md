@@ -1,6 +1,72 @@
 # Material decisions
 
-This log records consequential product, model, and engineering choices for model/schema version 1. It reconciles the operations-research, design, engineering, and independent-QA workstreams.
+This log records consequential product, model, and engineering choices. D-001 through D-016 are the released model/schema-v1 decisions. D-017 onward cover the separate Visualizer/model-v2 work and do not retroactively change v1. The current v2 decisions are summarized first for ease of reference, followed by the original v1 log.
+
+## Visualizer / model-v2 decisions
+
+### D-017 — Preserve Sandbox v1 and add Visualizer v2 in the same repository
+
+**Decision.** Keep the released Sandbox behavior intact and add a hash-addressable, lazy-loaded Visualizer workspace backed by independent v2 types, validation, storage, event logic, worker protocol, trace, and result contracts.
+
+**Alternatives considered.** Rewrite the v1 engine in place or create a separate repository.
+
+**Reason.** An in-place rewrite would silently invalidate the public v1 model contract. A second repository would duplicate design tokens, comparison principles, build infrastructure, accessibility patterns, and release controls. Isolation within one repository preserves reproducibility and makes regression review practical.
+
+### D-018 — Actual ESI 1–5 and individual resources belong to v2 only
+
+**Decision.** Model ESI 1–5, walk-in/ambulance arrivals, generic pathways, addressable rooms/beds/machines, diagnostics, and a dedicated boarding area in v2. Continue calling v1's categories operational tiers rather than relabeling them as ESI.
+
+**Alternatives considered.** Map the three v1 tiers to ESI labels without changing behavior.
+
+**Reason.** Relabeling would imply clinical specificity the old model does not have. A separate contract makes the new semantics testable and keeps old scenario URLs reproducible.
+
+### D-019 — Location, status, and resource ownership are orthogonal
+
+**Decision.** Give every active patient exactly one physical location, a set of concurrent operational statuses, one optional assigned treatment resource, and one optional active service resource.
+
+**Alternatives considered.** Encode one combined patient state or infer location from status.
+
+**Reason.** A patient can await multiple things at once, remain in a room during lab work, or travel to imaging while that room remains reserved. A combined enum cannot represent those conditions without duplication or ambiguous capacity.
+
+### D-020 — Keyed v2 random streams preserve paired patients
+
+**Decision.** Key exogenous v2 draws by seed, replication, patient ordinal, attribute/stage tag, and occurrence. Leave the frozen v1 random draw sequence unchanged.
+
+**Alternatives considered.** One event-order-dependent generator or extending v1's four patient draws.
+
+**Reason.** Resource changes should not shift later patient attributes just because event order diverges. Explicit v2 tags protect common-random-number comparisons and historical v1 vectors.
+
+### D-021 — Representative replay is selected, not assumed
+
+**Decision.** Run the ensemble first, select the replication closest to ensemble medians across a fixed outcome vector, and rerun only that replication with trace recording. Paired views use one shared replication index.
+
+**Alternatives considered.** Always animate replication 0, store every trace, or animate an artificial averaged trajectory.
+
+**Reason.** A fixed first replication may be atypical, every-trace retention wastes memory, and an averaged trajectory would not be a coherent event history. Deterministic selection makes “representative” auditable.
+
+### D-022 — Exact forward replay from periodic checkpoints
+
+**Decision.** Store immutable post-dispatch frames with state patches plus periodic checkpoints. Seek by restoring the nearest preceding checkpoint and folding patches forward.
+
+**Alternatives considered.** Reverse-simulating, saving a full state after every event, or deriving animation from aggregate charts.
+
+**Reason.** Checkpoint replay gives exact rewind and random access without an enormous per-event snapshot payload or fabricated movements.
+
+### D-023 — Adapt interaction patterns, not EdSim's domain framing
+
+**Decision.** Independently implement a persistent clock, replay controls, visible patients/resources, inspectors, quick transparent levers, synchronized A/B, and deep results. Exclude NHS workflows, staff/rota/cost modeling, RAG recommendations, live-record integration, copied presets, wording, code, or assets.
+
+**Alternatives considered.** Clone the competitor's full surface or ignore the reference entirely.
+
+**Reason.** The transferable patterns advance visual systems understanding. Jurisdiction-specific workflows and unsupported operational verdicts conflict with this project's neutral, synthetic, no-staffing scope. See `docs/EDSIM_ADOPTION.md`.
+
+### D-024 — Visualizer remains desktop-first and SVG-based
+
+**Decision.** Use DOM controls/inspectors, an SVG schematic with up to 300 visible patient marks, and Recharts for ensemble evidence. Preserve the existing Sandbox's small-screen behavior while setting a desktop minimum for the Visualizer.
+
+**Alternatives considered.** Canvas rendering immediately, hundreds of keyboard-focusable SVG entities, or redesigning v1 around a desktop-only shell.
+
+**Reason.** SVG supports selection and state styling at the requested scale. The semantic census/resource list is the keyboard equivalent, avoiding an unusable tab sequence. Canvas can be reconsidered only if profiling shows a real need.
 
 ## D-001 — Educational hypothesis sandbox, not forecasting product
 

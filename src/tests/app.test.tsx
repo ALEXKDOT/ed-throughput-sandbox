@@ -33,6 +33,33 @@ describe('application shell', () => {
     expect(name).toHaveValue('Balanced baseline');
   });
 
+  it('opens the separate Visualizer workspace without replacing the Sandbox', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Open Visualizer' }));
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'See patient flow, then test what changes it.',
+      }),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Run Scenario A' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Copy A into intervention B' }));
+    const rooms = screen.getByLabelText('Main treatment rooms, numeric value');
+    await user.clear(rooms);
+    await user.type(rooms, '22');
+    await user.click(screen.getByRole('button', { name: 'Sandbox' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'ED Throughput Sandbox' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Open Visualizer' }));
+    expect(screen.getByRole('button', { name: 'Run Scenario B' })).toBeVisible();
+    expect(screen.getByLabelText('Main treatment rooms, numeric value')).toHaveValue(22);
+    expect(screen.getByRole('link', { name: 'Skip to visualizer' })).toHaveAttribute(
+      'href',
+      '#visualizer-main',
+    );
+  });
+
   it('explains an unavailable metric instead of rendering a broken interval', () => {
     render(<MetricCard metric="medianLos" value={{ median: null, low: null, high: null, n: 0 }} />);
     expect(screen.getByText('N/A')).toBeVisible();
