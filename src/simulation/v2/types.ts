@@ -190,7 +190,6 @@ export interface PatientSnapshotV2 extends PatientIdentityV2 {
 export interface LiveKpisV2 {
   census: number;
   waiting: number;
-  overflowWaiting: number;
   occupiedTreatment: number;
   treatmentCapacity: number;
   imagingQueue: number;
@@ -253,7 +252,7 @@ export type VisualizerMetricKeyV2 =
   | 'doorToRoom'
   | 'lengthOfStay'
   | 'boarderHours'
-  | 'overflowPatientHours'
+  | 'waitingPatientHours'
   | 'departures'
   | 'peakCensus'
   | 'peakWaiting'
@@ -263,7 +262,7 @@ export const VISUALIZER_METRIC_KEYS: readonly VisualizerMetricKeyV2[] = [
   'doorToRoom',
   'lengthOfStay',
   'boarderHours',
-  'overflowPatientHours',
+  'waitingPatientHours',
   'departures',
   'peakCensus',
   'peakWaiting',
@@ -280,7 +279,6 @@ export interface ReplicationSeriesPointV2 {
   minute: number;
   census: number;
   waiting: number;
-  overflowWaiting: number;
   occupiedTreatment: number;
   imagingQueue: number;
   boarders: number;
@@ -314,7 +312,6 @@ export interface AggregateSeriesPointV2 {
   minute: number;
   census: IntervalValueV2;
   waiting: IntervalValueV2;
-  overflowWaiting: IntervalValueV2;
   occupiedTreatment: IntervalValueV2;
   imagingQueue: IntervalValueV2;
   boarders: IntervalValueV2;

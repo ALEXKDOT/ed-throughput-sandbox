@@ -42,13 +42,15 @@ The implemented status vocabulary includes awaiting triage, room, clinician, ord
 The generic schematic contains institution-neutral intake, care, diagnostic, and outflow locations:
 
 - walk-in entrance and ambulance arrival;
-- triage, waiting room, and overflow waiting;
+- triage and an uncapped waiting census;
 - trauma, main treatment, additive fast track, hallway treatment, behavioral health, and an observation scaffold;
 - CT, MRI, X-ray, ultrasound, and laboratory;
-- dedicated boarding and discharge lounge; and
+- an uncapped boarding census and discharge lounge; and
 - a visibly locked inpatient-destination placeholder.
 
-Capacity is represented by addressable resource units rather than aggregate counters. Current unit kinds include triage spots, main rooms, fast-track spaces, hallway beds, trauma bays, behavioral-health spaces, scanners/rooms, lab processors, discharge seats, and boarding beds.
+Capacity is represented by addressable resource units rather than aggregate counters. Current unit kinds include triage spots, main rooms, fast-track spaces, hallway beds, trauma bays, behavioral-health spaces, scanners/rooms, lab processors, discharge seats, and off-room boarding spaces. The waiting and boarding census are not configured resource capacities.
+
+The map uses deterministic adaptive grids with separate resource and patient bands. The map and census inspector render every active patient rather than truncating at a fixed count. For operational readability, patients awaiting triage or a treatment space are grouped visually in the waiting zone, and all admitted patients awaiting an inpatient bed are grouped in the boarding-census zone. This display grouping does not alter a patient's modeled physical location or resource ownership; the inspector and trace retain that underlying state. The boarding zone therefore distinguishes boarders in off-room spaces from boarders still holding care spaces.
 
 Runtime resources have an operational state and an ownership state. Current runs produce available, occupied, and reserved states. Closed and blocked are typed and render-ready but are not reachable until scheduled closure/dirty-resource semantics are implemented. Occupied and reserved resources have at most one owning patient. Dirty/cleaning semantics are deferred because environmental-services activity is not yet modeled.
 
@@ -58,7 +60,7 @@ The observation location is intentionally scaffolded but has no active routing r
 
 ### 4.1 Arrival and triage
 
-Arrivals are generated as independent one-minute Poisson increments with uniformly distributed within-minute timestamps. The rate follows the repeating 24-hour piecewise-constant profile, whose 24 multipliers must average 1.0, with scheduled arrival changes taking effect at their exact whole-minute boundary. This construction preserves all pre-intervention arrivals and makes a multiplier-one intervention a true no-op. Each patient enters the triage priority queue and receives a finite patience deadline. If the patient has not entered treatment by that deadline, the patient leaves without being seen.
+Arrivals are generated as independent one-minute Poisson increments with uniformly distributed within-minute timestamps. The rate follows the repeating 24-hour piecewise-constant profile, whose 24 multipliers must average 1.0, with scheduled arrival changes taking effect at their exact whole-minute boundary. This construction preserves all pre-intervention arrivals and makes a multiplier-one intervention a true no-op. Each patient enters the triage priority queue. A keyed subset receives a synthetic leaving-without-being-seen deadline; patients without that draw can remain queued through the modeled horizon.
 
 Triage and all subsequent queues use ESI 1 before 2 before 3 before 4 before 5. Ties within ESI use queue-entry time, then patient ID. Service already in progress is not preempted.
 
@@ -74,7 +76,7 @@ Treatment-space eligibility is deliberately simple and explicit:
 
 Fast-track capacity is additive in v2. It is not carved out of the main-room count as it is in model v1.
 
-Patients who have completed triage wait in the ordinary waiting room until its 24-position illustrative display capacity is exceeded; further patients use overflow waiting. This threshold is a synthetic presentation/model assumption, not a hospital standard.
+Patients who have completed triage wait in one unbounded treatment queue. There is no 24-patient threshold, overflow location, or other queue-capacity limit. The queue can therefore exceed 100 patients and preserve waits longer than 12 hours in sufficiently overloaded synthetic scenarios. Physical treatment resources remain finite and determine how quickly the queue clears.
 
 ### 4.3 Diagnostics and reassessment
 
@@ -86,11 +88,11 @@ Pathway and diagnostic assignment are fixed synthetic rules, not fitted clinical
 
 ### 4.4 Disposition, discharge, and boarding
 
-Disposition probabilities depend on ESI. The model includes discharge, admission, transfer, death, leaving without being seen (LWBS), leaving before treatment completion (LBTC), and elopement. ESI 1 has a 1.2% synthetic death threshold; ESI 1–2 has a 3.5% cumulative transfer threshold before the configured admission threshold is applied to the same deterministic draw. Untreated patience is a keyed 65%–175% multiplier on 24 hours for ESI 1, 10 hours for ESI 2, 6 hours for ESI 3, 4 hours for ESI 4, and 3 hours for ESI 5. ESI 4–5 patients with a 1.2% exit-risk draw receive a five-hour LBTC deadline after treatment begins; admitted patients with a 0.3% draw receive an eight-hour elopement deadline. These deliberately simple hazards are not clinically fitted risks.
+Disposition probabilities depend on ESI. The model includes discharge, admission, transfer, death, leaving without being seen (LWBS), leaving before treatment completion (LBTC), and elopement. ESI 1 has a 1.2% synthetic death threshold; ESI 1–2 has a 3.5% cumulative transfer threshold before the configured admission threshold is applied to the same deterministic draw. Synthetic LWBS eligibility is 0.2%, 1%, 4%, 10%, and 16% for ESI 1 through 5. Eligible patients receive a keyed 75%–250% multiplier on a 24-, 16-, 12-, 10-, or 8-hour base, respectively; all other untreated patients remain in the queue. ESI 4–5 patients with a 1.2% exit-risk draw receive a five-hour LBTC deadline after treatment begins; admitted patients with a 0.3% draw receive an eight-hour elopement deadline. These deliberately simple hazards are not clinically fitted risks.
 
 Discharged patients move to an available discharge-lounge seat, releasing the original treatment space. If the lounge is full, the patient remains discharge-pending in the original space.
 
-An admitted patient moves to an available dedicated boarding bed and releases the original treatment space. If no boarding bed is available, the patient remains in and blocks the original room or hallway space. A stochastic aggregate inpatient delay ends boarding and moves the patient out of the modeled ED. Inpatient units, placement logic, transport resources, and downstream bed matching are not simulated.
+An admitted patient moves to an available off-room boarding space and releases the original treatment space. If no off-room space is available, the patient remains in and blocks the assigned treatment space. The total boarder census and the queue for an off-room space have no configured count limit; `boardingBeds` controls only how many boarders can release their treatment spaces. A stochastic aggregate inpatient delay ends boarding and moves the patient out of the modeled ED. Inpatient units, placement logic, transport resources, and downstream bed matching are not simulated.
 
 ## 5. Event ordering and interventions
 
@@ -116,7 +118,7 @@ The model-v1 four-draw patient stream is unchanged.
 
 ## 7. Representative replication and exact replay
 
-The worker first runs compact summaries for every replication. It selects the replication with the lowest squared standardized distance from ensemble medians across door-to-room time, ED length of stay, boarder-hours, overflow patient-hours, and departures. In paired mode, the score includes both scenarios and the same replication index is used for A and B. Ties resolve to the lowest replication index.
+The worker first runs compact summaries for every replication. It selects the replication with the lowest squared standardized distance from ensemble medians across door-to-room time, ED length of stay, boarder-hours, waiting patient-hours, and departures. In paired mode, the score includes both scenarios and the same replication index is used for A and B. Ties resolve to the lowest replication index.
 
 Only the selected replication is rerun with trace recording. The trace contains:
 
@@ -137,14 +139,14 @@ Current ensemble summary measures and cohorts are:
 - **Median door-to-treatment-space time:** waits observed when treatment starts in `[0, analysis end)`, including warm-up arrivals that start treatment in the analysis window. Patients still waiting at the end are not imputed.
 - **Median ED length of stay:** stays observed for departures in `[0, analysis end)`, including warm-up arrivals that depart in the window. Patients still active at the end are right-censored and excluded from this median.
 - **Total boarder-hours:** exact event-to-event integral of admitted-awaiting-inpatient-bed census over the analysis window, divided by 60.
-- **Overflow patient-hours:** exact integral of `max(0, treatment queue − 24)` over the analysis window, divided by 60. The illustrative threshold excludes the triage queue.
+- **Waiting patient-hours:** exact event-to-event integral of the full triage-plus-treatment waiting census over the analysis window, divided by 60. No display or capacity threshold is subtracted.
 - **Departures:** all departure events in the analysis window, with disposition counts retained per replication.
 - **Peak ED census and peak waiting census:** maxima of the analysis-start state and every stable post-batch/post-dispatch state. Waiting is triage queue plus treatment queue.
 - **Median constrained-diagnostic queue delay:** queue-entry-to-service-start waits observed when CT, MRI, X-ray, ultrasound, or lab starts at or after minute 0.
 
-Hourly status bands are pre-event snapshots at 60-minute boundaries and include census, waiting, overflow waiting, occupied treatment spaces, diagnostic queue, boarders, and cumulative departures. Each reported interval is the empirical 10th, 50th, and 90th percentile across finite replication values. KPI cards use the representative state as the primary value and label the ensemble range separately. Clicking a KPI jumps the replay to that measure's ensemble peak period, or to representative peak census when no time-series analogue exists.
+Hourly status bands are pre-event snapshots at 60-minute boundaries and include census, total waiting, occupied treatment spaces, diagnostic queue, total boarders, and cumulative departures. Each reported interval is the empirical 10th, 50th, and 90th percentile across finite replication values. KPI cards use the representative state as the primary value and label the ensemble range separately. Clicking a KPI jumps the replay to that measure's ensemble peak period, or to representative peak census when no time-series analogue exists.
 
-Representative selection uses door-to-room, LOS, boarder-hours, overflow patient-hours, and departures. For each metric, distance from the ensemble median is divided by the empirical p90–p10 spread (with `1e-9` as the zero-spread floor), squared, and summed. A missing metric contributes a fixed penalty of 4. Paired selection sums the two scenario scores, and ties choose the lowest replication index.
+Representative selection uses door-to-room, LOS, boarder-hours, waiting patient-hours, and departures. For each metric, distance from the ensemble median is divided by the empirical p90–p10 spread (with `1e-9` as the zero-spread floor), squared, and summed. A missing metric contributes a fixed penalty of 4. Paired selection sums the two scenario scores, and ties choose the lowest replication index.
 
 ## 9. Current limitations and deferred work
 

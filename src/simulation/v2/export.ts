@@ -84,7 +84,6 @@ function resultRows(
     for (const metric of [
       'census',
       'waiting',
-      'overflowWaiting',
       'occupiedTreatment',
       'imagingQueue',
       'boarders',

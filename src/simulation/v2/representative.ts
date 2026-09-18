@@ -9,7 +9,7 @@ const REPRESENTATIVE_METRICS: readonly VisualizerMetricKeyV2[] = [
   'doorToRoom',
   'lengthOfStay',
   'boarderHours',
-  'overflowPatientHours',
+  'waitingPatientHours',
   'departures',
 ];
 
@@ -51,7 +51,7 @@ export function selectRepresentativeV2(
   }
   return {
     ...best,
-    algorithmVersion: 'representative-v2.0-standardized-median-distance',
+    algorithmVersion: 'representative-v2.1-standardized-median-distance',
     pairing,
   };
 }

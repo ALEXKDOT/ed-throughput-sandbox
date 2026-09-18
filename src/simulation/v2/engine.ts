@@ -33,9 +33,24 @@ import {
   type VisualizerCapacitiesV2,
 } from './types';
 
-export const V2_ENGINE_VERSION = `edts-model-v2.0 | ${V2_RNG_VERSION} | trace-v2.0`;
+export const V2_ENGINE_VERSION = `edts-model-v2.1 | ${V2_RNG_VERSION} | trace-v2.1`;
 const SERIES_MINUTES = 60;
-const WAITING_ROOM_CAPACITY = 24;
+
+const LWBS_PROBABILITY_BY_ESI: Record<EsiLevel, number> = {
+  1: 0.002,
+  2: 0.01,
+  3: 0.04,
+  4: 0.1,
+  5: 0.16,
+};
+
+const LWBS_BASE_MINUTES_BY_ESI: Record<EsiLevel, number> = {
+  1: 24 * 60,
+  2: 16 * 60,
+  3: 12 * 60,
+  4: 10 * 60,
+  5: 8 * 60,
+};
 
 type DiagnosticService = Extract<ServiceKind, 'ct' | 'mri' | 'xray' | 'ultrasound' | 'lab'>;
 type QueueName =
@@ -45,7 +60,7 @@ interface PatientBlueprint extends PatientIdentityV2 {
   diagnostics: DiagnosticService[];
   dispositionRoll: number;
   exitRiskRoll: number;
-  patienceMinutes: number;
+  lwbsDeadlineMinutes?: number;
 }
 
 interface RuntimePatient extends PatientBlueprint {
@@ -225,8 +240,11 @@ export function generatePatientBlueprintsV2(
         : 'ambulance';
     const pathway = selectPathway(keyedUniform(scenario.seed, replication, id, 'pathway'), esi);
     const patienceDraw = keyedUniform(scenario.seed, replication, id, 'patience');
-    const patienceBase =
-      esi === 1 ? 24 * 60 : esi === 2 ? 10 * 60 : esi === 3 ? 6 * 60 : esi === 4 ? 4 * 60 : 3 * 60;
+    const lwbsRiskRoll = keyedUniform(scenario.seed, replication, id, 'lwbs');
+    const lwbsDeadlineMinutes =
+      lwbsRiskRoll < LWBS_PROBABILITY_BY_ESI[esi]
+        ? LWBS_BASE_MINUTES_BY_ESI[esi] * (0.75 + patienceDraw * 1.75)
+        : undefined;
     return {
       id,
       displayId: `P${String(id + 1).padStart(4, '0')}`,
@@ -237,7 +255,7 @@ export function generatePatientBlueprintsV2(
       diagnostics: buildDiagnostics(scenario, replication, id, esi, pathway),
       dispositionRoll: keyedUniform(scenario.seed, replication, id, 'disposition'),
       exitRiskRoll: keyedUniform(scenario.seed, replication, id, 'patience', 1),
-      patienceMinutes: patienceBase * (0.65 + patienceDraw * 1.1),
+      lwbsDeadlineMinutes,
     };
   });
 }
@@ -328,7 +346,7 @@ export function runReplicationV2(
   const lengthsOfStay: number[] = [];
   const imagingDelays: number[] = [];
   let boarderMinutes = 0;
-  let overflowMinutes = 0;
+  let waitingMinutes = 0;
   let peakCensus = 0;
   let peakWaiting = 0;
   let peakMinute = 0;
@@ -357,7 +375,6 @@ export function runReplicationV2(
     [...activePatientIds].map((patientId) => patients.get(patientId)!).filter(Boolean);
   const activeCount = () => activePatientIds.size;
   const queueWaitingCount = () => queues.triage.length + queues.treatment.length;
-  const overflowCount = () => Math.max(0, queues.treatment.length - WAITING_ROOM_CAPACITY);
   const boarderCount = () => boarderCensus;
   const imagingQueueCount = () =>
     queues.ct.length +
@@ -424,7 +441,6 @@ export function runReplicationV2(
   const liveKpis = (_minute: number): LiveKpisV2 => ({
     census: activeCount(),
     waiting: queueWaitingCount(),
-    overflowWaiting: overflowCount(),
     occupiedTreatment: occupiedTreatmentCount(),
     treatmentCapacity: treatmentResources().filter((resource) => resource.operational === 'open')
       .length,
@@ -529,13 +545,9 @@ export function runReplicationV2(
 
   const updateWaitingLocations = () => {
     const ordered = [...queues.treatment].sort((a, b) => queueSort(a, b, patients));
-    ordered.forEach((entry, index) => {
+    ordered.forEach((entry) => {
       const patient = patients.get(entry.patientId)!;
-      setLocation(
-        patient,
-        index < WAITING_ROOM_CAPACITY ? 'waiting' : 'overflowWaiting',
-        index < WAITING_ROOM_CAPACITY ? 'Moved to the waiting room' : 'Moved to overflow waiting',
-      );
+      setLocation(patient, 'waiting', 'Moved to the waiting room');
     });
   };
 
@@ -813,7 +825,7 @@ export function runReplicationV2(
         patientId: patient.id,
         resourceId: resource.id,
         service: 'boarding',
-        label: `${resource.label}: dedicated boarding started`,
+        label: `${resource.label}: off-room boarding started`,
       });
     }
   };
@@ -958,7 +970,6 @@ export function runReplicationV2(
   const stateValues = (): Omit<ReplicationSeriesPointV2, 'minute'> => ({
     census: activeCount(),
     waiting: queueWaitingCount(),
-    overflowWaiting: overflowCount(),
     occupiedTreatment: occupiedTreatmentCount(),
     imagingQueue: imagingQueueCount(),
     boarders: boarderCount(),
@@ -978,7 +989,7 @@ export function runReplicationV2(
     if (end <= start) return;
     const duration = end - start;
     boarderMinutes += boarderCount() * duration;
-    overflowMinutes += overflowCount() * duration;
+    waitingMinutes += queueWaitingCount() * duration;
   };
 
   const initializeAnalysis = () => {
@@ -1076,12 +1087,14 @@ export function runReplicationV2(
         markQueueResources('triage');
         arrivalsProcessed += 1;
         if (event.time >= 0) arrivalsInAnalysis += 1;
-        schedule({
-          kind: 'exitDeadline',
-          time: event.time + patient.patienceMinutes,
-          patientId: patient.id,
-          disposition: 'lwbs',
-        });
+        if (patient.lwbsDeadlineMinutes != null) {
+          schedule({
+            kind: 'exitDeadline',
+            time: event.time + patient.lwbsDeadlineMinutes,
+            patientId: patient.id,
+            disposition: 'lwbs',
+          });
+        }
         emit({
           kind: 'arrival',
           patientId: patient.id,
@@ -1149,7 +1162,7 @@ export function runReplicationV2(
       doorToRoom: median(doorToRoom),
       lengthOfStay: median(lengthsOfStay),
       boarderHours: boarderMinutes / 60,
-      overflowPatientHours: overflowMinutes / 60,
+      waitingPatientHours: waitingMinutes / 60,
       departures: departuresInAnalysis,
       peakCensus,
       peakWaiting,
@@ -1170,7 +1183,7 @@ export function runReplicationV2(
     trace = {
       schemaVersion: 2,
       modelVersion: 'edts-model-v2',
-      traceVersion: 'trace-v2.0',
+      traceVersion: 'trace-v2.1',
       scenarioName: scenario.name,
       scenarioDigest: shortDigest(scenario),
       seed: scenario.seed,
@@ -1181,7 +1194,7 @@ export function runReplicationV2(
         ({
           replication,
           distance: 0,
-          algorithmVersion: 'representative-v2.0',
+          algorithmVersion: 'representative-v2.1',
           pairing: 'patient',
         } as const),
       identities: blueprints
@@ -1193,7 +1206,7 @@ export function runReplicationV2(
             diagnostics: _diagnostics,
             dispositionRoll: _disposition,
             exitRiskRoll: _exitRisk,
-            patienceMinutes: _patience,
+            lwbsDeadlineMinutes: _lwbsDeadline,
             ...identity
           }) => identity,
         ),

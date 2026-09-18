@@ -42,7 +42,7 @@ export function formatMetricV2(metric: VisualizerMetricKeyV2, value: number | nu
   if (metric === 'doorToRoom' || metric === 'lengthOfStay' || metric === 'imagingDelay') {
     return formatDurationV2(value);
   }
-  if (metric === 'boarderHours' || metric === 'overflowPatientHours') {
+  if (metric === 'boarderHours' || metric === 'waitingPatientHours') {
     return `${value.toFixed(value >= 100 ? 0 : 1)} hr`;
   }
   return Math.round(value).toLocaleString();
@@ -51,6 +51,7 @@ export function formatMetricV2(metric: VisualizerMetricKeyV2, value: number | nu
 export function locationLabel(locationId: LocationKind): string {
   if (locationId === 'exit') return 'Departed';
   if (locationId === 'inpatientDestination') return 'Inpatient destination';
+  if (locationId === 'overflowWaiting') return 'Waiting room';
   return VISUALIZER_LOCATIONS.find((location) => location.id === locationId)?.label ?? locationId;
 }
 
@@ -82,7 +83,7 @@ export const METRIC_LABELS_V2: Record<VisualizerMetricKeyV2, string> = {
   doorToRoom: 'Door to treatment space',
   lengthOfStay: 'ED length of stay',
   boarderHours: 'Boarding hours',
-  overflowPatientHours: 'Overflow patient-hours',
+  waitingPatientHours: 'Waiting patient-hours',
   departures: 'Departures',
   peakCensus: 'Peak ED census',
   peakWaiting: 'Peak waiting',

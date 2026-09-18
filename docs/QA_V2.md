@@ -2,7 +2,7 @@
 
 ## Release status
 
-This record covers the first implementation of the separate **Visualizer** workspace and model/schema v2. The automated implementation-conformance gate passed on 2026-09-14. The model remains synthetic and unvalidated for real operational use.
+This record covers the separate **Visualizer** workspace and model/schema v2. The first automated implementation-conformance gate passed on 2026-09-14; the overload-visibility revision passed the complete gate on 2026-09-17. The model remains synthetic and unvalidated for real operational use.
 
 ## Verified release gates
 
@@ -13,8 +13,8 @@ The following checks were run against the release source:
 | Formatting                      | Passed with no changes required after the final source edits          |
 | ESLint                          | Passed with zero warnings allowed                                     |
 | Strict TypeScript build         | Passed                                                                |
-| Vitest                          | 90 tests passed across 11 files                                       |
-| Standard Vite production bundle | Passed; 625 client modules transformed                                |
+| Vitest                          | 96 tests passed across 11 files                                       |
+| Standard Vite production bundle | Passed; 626 client modules transformed                                |
 | Sites/Workers production bundle | Passed; emitted `dist/server/index.js` and the complete client bundle |
 | Current npm advisory audit      | Passed; zero known vulnerabilities reported                           |
 
@@ -28,7 +28,7 @@ The Visualizer suite checks:
 - hourly demand-profile validation, exact scheduled-arrival boundaries, and multiplier-one no-op behavior;
 - actual ESI 1–5 priority with FIFO tie-breaking;
 - constrained treatment, diagnostic, laboratory, discharge-lounge, hallway, fast-track, and boarding resources;
-- dedicated boarding release and zero-dedicated-capacity treatment-room fallback;
+- off-room boarding release and zero-off-room-capacity treatment-room fallback;
 - separation of global care-duration scaling from inpatient-delay scaling;
 - warm-up carryover identity, analysis-boundary metrics, and initial-state peaks;
 - replay checkpoints, immutable patch folding, exact seeking, continuous clocks between events, queue reconstruction, and trace identity;
@@ -56,6 +56,20 @@ Independent model, correctness, and interface reviews found no release-blocking 
 - per-scenario run timing and split A/B evidence charts;
 - complete assumption-change and export-provenance inventories; and
 - responsive breakpoints for the dense desktop-first comparison layout.
+
+## 2026-09-17 overload-visibility follow-up
+
+The capacity-visibility revision removes the 24-patient waiting threshold, removes the 300-patient map truncation, and groups the complete boarder census without changing physical resource ownership. Added regression coverage verifies:
+
+- more than 100 simultaneous waiting patients and waits of at least 12 hours in an overloaded synthetic fixture;
+- deterministic probability-gated LWBS eligibility and deadline bounds;
+- exact agreement between the live waiting KPI and replayed triage/treatment queues;
+- boarder census exceeding available off-room boarding spaces while excess boarders continue to hold care spaces;
+- all 350 patients in a component fixture rendering on the map;
+- unique, row-aligned adaptive patient coordinates inside zone bounds; and
+- disjoint resource and patient layout bands.
+
+The complete formatting, lint, strict TypeScript, 96-test, and production-build gate passed after these changes.
 
 ## Evidence not claimed
 

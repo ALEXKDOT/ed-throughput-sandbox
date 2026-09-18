@@ -36,7 +36,6 @@ export function intervalV2(values: readonly (number | null)[]): IntervalValueV2 
 const SERIES_KEYS: readonly Exclude<keyof ReplicationSeriesPointV2, 'minute'>[] = [
   'census',
   'waiting',
-  'overflowWaiting',
   'occupiedTreatment',
   'imagingQueue',
   'boarders',
@@ -66,7 +65,7 @@ export function aggregateReplicationsV2(
   });
   return {
     scenario,
-    algorithmVersion: 'edts-model-v2.0 | aggregate-v2.0',
+    algorithmVersion: 'edts-model-v2.1 | aggregate-v2.1',
     replicationCount: replications.length,
     metrics,
     series,
@@ -153,7 +152,7 @@ export function changedAssumptionsV2(a: ScenarioConfigV2, b: ScenarioConfigV2): 
     ultrasoundRooms: 'Ultrasound rooms',
     labProcessors: 'Lab processors',
     dischargeSeats: 'Discharge seats',
-    boardingBeds: 'Boarding spaces',
+    boardingBeds: 'Off-room boarding spaces',
   };
   for (const key of Object.keys(capacityLabels) as (keyof ScenarioConfigV2['capacities'])[]) {
     if (a.capacities[key] !== b.capacities[key]) {

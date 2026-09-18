@@ -11,6 +11,7 @@ const TAGS: Record<string, number> = {
   diagnostics: 0x44494147,
   disposition: 0x44495350,
   patience: 0x50415449,
+  lwbs: 0x4c574253,
   service: 0x53525643,
 };
 

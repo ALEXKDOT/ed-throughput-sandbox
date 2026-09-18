@@ -14,7 +14,7 @@ This log records consequential product, model, and engineering choices. D-001 th
 
 ### D-018 — Actual ESI 1–5 and individual resources belong to v2 only
 
-**Decision.** Model ESI 1–5, walk-in/ambulance arrivals, generic pathways, addressable rooms/beds/machines, diagnostics, and a dedicated boarding area in v2. Continue calling v1's categories operational tiers rather than relabeling them as ESI.
+**Decision.** Model ESI 1–5, walk-in/ambulance arrivals, generic pathways, addressable rooms/beds/machines, diagnostics, and an explicit boarding census with off-room spaces in v2. Continue calling v1's categories operational tiers rather than relabeling them as ESI.
 
 **Alternatives considered.** Map the three v1 tiers to ESI labels without changing behavior.
 
@@ -62,11 +62,19 @@ This log records consequential product, model, and engineering choices. D-001 th
 
 ### D-024 — Visualizer remains desktop-first and SVG-based
 
-**Decision.** Use DOM controls/inspectors, an SVG schematic with up to 300 visible patient marks, and Recharts for ensemble evidence. Preserve the existing Sandbox's small-screen behavior while setting a desktop minimum for the Visualizer.
+**Decision.** Use DOM controls/inspectors, an SVG schematic with deterministic adaptive grids for every active patient, and Recharts for ensemble evidence. Preserve the existing Sandbox's small-screen behavior while setting a desktop minimum for the Visualizer.
 
 **Alternatives considered.** Canvas rendering immediately, hundreds of keyboard-focusable SVG entities, or redesigning v1 around a desktop-only shell.
 
-**Reason.** SVG supports selection and state styling at the requested scale. The semantic census/resource list is the keyboard equivalent, avoiding an unusable tab sequence. Canvas can be reconsidered only if profiling shows a real need.
+**Reason.** SVG supports selection and state styling at the current synthetic scale. Adaptive radii and separate patient/resource bands preserve alignment without silently truncating overload. The semantic census/resource list is the keyboard equivalent, avoiding an unusable tab sequence. Canvas can be reconsidered only if profiling shows a real need.
+
+### D-025 — Waiting and boarding census have no configured capacity ceiling
+
+**Decision.** Keep the triage and treatment queues unbounded, show them as one waiting census, and show every admitted-awaiting-bed patient in one boarding census. Treat `boardingBeds` as finite off-room spaces that release treatment resources, not as a maximum boarder count. Preserve each patient's modeled location and resource ownership beneath the grouped map display.
+
+**Alternatives considered.** Retain a 24-position waiting threshold and overflow zone, hide patients beyond a visual limit, or make all boarders release treatment spaces into an infinite virtual holding area.
+
+**Reason.** A queue threshold distorted both the visual story and its derived patient-hours metric. An infinite virtual boarding resource would erase the very treatment-space blocking that makes boarding a throughput bottleneck. Unbounded census plus finite physical resources represents overload without either artificial cap.
 
 ## D-001 — Educational hypothesis sandbox, not forecasting product
 

@@ -41,14 +41,7 @@ export const VISUALIZER_LOCATIONS: readonly LocationDefinitionV2[] = [
     label: 'Waiting room',
     shortLabel: 'Waiting',
     group: 'input',
-    map: { x: 19, y: 29, width: 17, height: 20 },
-  },
-  {
-    id: 'overflowWaiting',
-    label: 'Overflow waiting',
-    shortLabel: 'Overflow',
-    group: 'input',
-    map: { x: 19, y: 54, width: 17, height: 13 },
+    map: { x: 19, y: 29, width: 17, height: 38 },
   },
   {
     id: 'trauma',
@@ -62,7 +55,7 @@ export const VISUALIZER_LOCATIONS: readonly LocationDefinitionV2[] = [
     label: 'Main treatment',
     shortLabel: 'Main',
     group: 'throughput',
-    map: { x: 40, y: 23, width: 34, height: 29 },
+    map: { x: 40, y: 23, width: 34, height: 31 },
   },
   {
     id: 'fastTrack',
@@ -129,17 +122,17 @@ export const VISUALIZER_LOCATIONS: readonly LocationDefinitionV2[] = [
   },
   {
     id: 'boarding',
-    label: 'Dedicated boarding',
+    label: 'Boarding census',
     shortLabel: 'Boarding',
     group: 'output',
-    map: { x: 78, y: 57, width: 20, height: 16 },
+    map: { x: 76, y: 54, width: 22, height: 29 },
   },
   {
     id: 'dischargeLounge',
     label: 'Discharge lounge',
     shortLabel: 'Discharge',
     group: 'output',
-    map: { x: 78, y: 77, width: 20, height: 14 },
+    map: { x: 76, y: 86, width: 22, height: 10 },
   },
 ] as const;
 
@@ -264,7 +257,7 @@ const RESOURCE_CONFIG: Record<
     kind: 'boardingBed',
     locationId: 'boarding',
     prefix: 'B',
-    label: 'Boarding bed',
+    label: 'Off-room boarding space',
   },
 };
 
@@ -295,5 +288,5 @@ export const CAPACITY_LABELS: Record<CapacityKeyV2, string> = {
   ultrasoundRooms: 'Ultrasound rooms',
   labProcessors: 'Lab processors',
   dischargeSeats: 'Discharge-lounge seats',
-  boardingBeds: 'Dedicated boarding spaces',
+  boardingBeds: 'Off-room boarding spaces',
 };

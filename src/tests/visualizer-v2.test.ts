@@ -92,7 +92,7 @@ describe('model v2 engine', () => {
     }
   });
 
-  it('moves admitted patients to dedicated boarding resources and releases treatment capacity', () => {
+  it('moves admitted patients to off-room boarding resources and releases treatment capacity', () => {
     const scenario = shortScenario();
     scenario.admissionRates = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 };
     const trace = runReplicationV2(scenario, 4, { recordTrace: true }).trace!;
@@ -131,14 +131,14 @@ describe('model v2 engine', () => {
     ).toHaveLength(2);
   });
 
-  it('completes the full representative-week horizon within the 300-dot design target', () => {
+  it('completes the full representative-week horizon without a patient-display ceiling', () => {
     const result = runReplicationV2(DEFAULT_VISUALIZER_SCENARIO, 0);
     expect(result.series.at(-1)?.minute).toBe(7 * 24 * 60);
-    expect(result.diagnostics.maxActivePatients).toBeLessThanOrEqual(300);
+    expect(result.diagnostics.maxActivePatients).toBeGreaterThan(0);
     expect(result.diagnostics.conservationValid).toBe(true);
   });
 
-  it('lets room-blocking boarders depart when dedicated boarding capacity is zero', () => {
+  it('lets room-blocking boarders depart when off-room boarding capacity is zero', () => {
     const scenario = shortScenario();
     scenario.capacities.boardingBeds = 0;
     scenario.admissionRates = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 };
@@ -146,6 +146,104 @@ describe('model v2 engine', () => {
     expect(result.metrics.departuresByDisposition.admit).toBeGreaterThan(0);
     expect(result.diagnostics.conservationValid).toBe(true);
     expect(result.diagnostics.resourceOwnershipValid).toBe(true);
+  });
+
+  it('allows an uncapped waiting queue with patients waiting longer than 12 hours', () => {
+    const scenario = cloneVisualizerScenario(DEFAULT_VISUALIZER_SCENARIO);
+    scenario.window = { warmUpMinutes: 0, analysisMinutes: 24 * 60 };
+    scenario.demand.meanArrivalsPerHour = 12;
+    scenario.demand.hourlyMultipliers = Array.from({ length: 24 }, () => 1);
+    scenario.demand.esiMix = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 1 };
+    scenario.demand.arrivalModeMix = { walkIn: 1, ambulance: 0 };
+    scenario.capacities.triageSpots = 3;
+    scenario.capacities.mainRooms = 1;
+    scenario.capacities.fastTrackSpaces = 0;
+    scenario.capacities.hallwayBeds = 0;
+    scenario.capacities.behavioralHealthBeds = 0;
+    scenario.durations.triageMedian = 1;
+    scenario.durations.treatmentMedianByEsi = { 1: 1440, 2: 1440, 3: 1440, 4: 1440, 5: 1440 };
+    scenario.admissionRates = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    const result = runReplicationV2(scenario, 0, { recordTrace: true });
+    const final = snapshotAtV2(result.trace!, scenario.window.analysisMinutes);
+    const queuedPatients = Object.values(final.patients).filter(
+      (patient) =>
+        patient.statuses.includes('awaitingTriage') || patient.statuses.includes('awaitingRoom'),
+    );
+
+    expect(final.live.waiting).toBe(queuedPatients.length);
+    expect(final.live.waiting).toBeGreaterThan(100);
+    expect(
+      queuedPatients
+        .filter((patient) => patient.statuses.includes('awaitingRoom'))
+        .every((patient) => patient.locationId === 'waiting'),
+    ).toBe(true);
+    expect(queuedPatients.some((patient) => patient.waitMinutes >= 12 * 60)).toBe(true);
+    expect(result.metrics.values.waitingPatientHours).toBeGreaterThan(0);
+  });
+
+  it('uses deterministic probability-gated LWBS deadlines instead of universal patience caps', () => {
+    const scenario = cloneVisualizerScenario(DEFAULT_VISUALIZER_SCENARIO);
+    scenario.window = { warmUpMinutes: 0, analysisMinutes: 14 * 24 * 60 };
+    scenario.demand.meanArrivalsPerHour = 25;
+    scenario.demand.hourlyMultipliers = Array.from({ length: 24 }, () => 1);
+    scenario.demand.esiMix = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 1 };
+
+    const blueprints = generatePatientBlueprintsV2(scenario, 0);
+    const eligible = blueprints.filter((patient) => patient.lwbsDeadlineMinutes != null);
+    expect(blueprints.length).toBeGreaterThan(8_000);
+    expect(eligible.length / blueprints.length).toBeGreaterThan(0.14);
+    expect(eligible.length / blueprints.length).toBeLessThan(0.18);
+    expect(
+      eligible.every(
+        (patient) =>
+          patient.lwbsDeadlineMinutes! >= 6 * 60 && patient.lwbsDeadlineMinutes! <= 20 * 60,
+      ),
+    ).toBe(true);
+    expect(blueprints.some((patient) => patient.lwbsDeadlineMinutes == null)).toBe(true);
+  });
+
+  it('counts every boarder even when off-room boarding spaces are full', () => {
+    const scenario = cloneVisualizerScenario(DEFAULT_VISUALIZER_SCENARIO);
+    scenario.window = { warmUpMinutes: 0, analysisMinutes: 24 * 60 };
+    scenario.demand.meanArrivalsPerHour = 6;
+    scenario.demand.hourlyMultipliers = Array.from({ length: 24 }, () => 1);
+    scenario.capacities.mainRooms = 4;
+    scenario.capacities.fastTrackSpaces = 2;
+    scenario.capacities.hallwayBeds = 2;
+    scenario.capacities.traumaBays = 1;
+    scenario.capacities.behavioralHealthBeds = 1;
+    scenario.capacities.boardingBeds = 1;
+    scenario.durations = {
+      ...scenario.durations,
+      triageMedian: 1,
+      treatmentMedianByEsi: { 1: 2, 2: 2, 3: 2, 4: 2, 5: 2 },
+      reassessmentMedian: 1,
+      ctMedian: 1,
+      mriMedian: 1,
+      xrayMedian: 1,
+      ultrasoundMedian: 1,
+      labMedian: 1,
+      boardingMedian: 4320,
+      variability: 0.05,
+    };
+    scenario.admissionRates = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 };
+
+    const result = runReplicationV2(scenario, 0, { recordTrace: true });
+    const final = snapshotAtV2(result.trace!, scenario.window.analysisMinutes);
+    const boarders = Object.values(final.patients).filter((patient) =>
+      patient.statuses.includes('admittedAwaitingBed'),
+    );
+    const offRoom = boarders.filter((patient) => patient.locationId === 'boarding');
+    const holdingCareSpaces = boarders.filter(
+      (patient) => patient.assignedTreatmentResourceId != null,
+    );
+
+    expect(final.live.boarders).toBe(boarders.length);
+    expect(final.live.boarders).toBeGreaterThan(scenario.capacities.boardingBeds);
+    expect(offRoom.length).toBeLessThanOrEqual(scenario.capacities.boardingBeds);
+    expect(holdingCareSpaces.length).toBeGreaterThan(0);
+    expect(offRoom.length + holdingCareSpaces.length).toBe(boarders.length);
   });
 
   it('keeps care-duration scaling separate from inpatient delay scaling', () => {
@@ -395,6 +493,7 @@ describe('model v2 validation', () => {
     expect(csv).toContain('scenario_digest');
     expect(csv).toContain('selection_algorithm_version');
     expect(csv).toContain('demand.meanArrivalsPerHour');
+    expect(csv).toContain('waitingPatientHours');
     expect(csv).toContain(run.trace!.scenarioDigest);
   });
 });

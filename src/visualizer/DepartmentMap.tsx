@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
 import { VISUALIZER_LOCATIONS } from '../simulation/v2/defaults';
-import type {
-  LocationDefinitionV2,
-  PatientSnapshotV2,
-  ReplayStateV2,
-  ResourceSnapshotV2,
-} from '../simulation/v2/types';
+import type { PatientSnapshotV2, ReplayStateV2 } from '../simulation/v2/types';
+import { displayLocationForPatient, layoutZoneEntities, zoneGeometry } from './mapLayout';
 
 export type VisualizerSelection =
   | { kind: 'patient'; id: number; slot: 'a' | 'b' }
@@ -29,43 +25,17 @@ const GROUP_LABELS = {
   output: 'OUTPUT',
 };
 
-function zoneGeometry(location: LocationDefinitionV2) {
-  return {
-    x: location.map.x * 10,
-    y: location.map.y * 6.2,
-    width: location.map.width * 10,
-    height: location.map.height * 6.2,
-  };
-}
-
-function resourcePosition(resource: ResourceSnapshotV2, location: LocationDefinitionV2) {
-  const geometry = zoneGeometry(location);
-  const columns = Math.max(1, Math.floor((geometry.width - 22) / 20));
-  return {
-    x: geometry.x + 14 + (resource.ordinal % columns) * 20,
-    y: geometry.y + 37 + Math.floor(resource.ordinal / columns) * 18,
-  };
-}
-
-function patientPosition(
-  patient: PatientSnapshotV2,
-  location: LocationDefinitionV2,
-  index: number,
-) {
-  const geometry = zoneGeometry(location);
-  const columns = Math.max(2, Math.floor((geometry.width - 20) / 17));
-  const baseY = geometry.y + Math.min(74, Math.max(42, geometry.height * 0.54));
-  const row = Math.floor(index / columns);
-  const jitter = ((patient.id * 17) % 5) - 2;
-  return {
-    x: geometry.x + 14 + (index % columns) * 17 + jitter,
-    y: Math.min(geometry.y + geometry.height - 11, baseY + row * 17 + jitter / 2),
-  };
-}
-
 function mapSummary(state?: ReplayStateV2): string {
   if (!state) return 'Department map ready for a representative simulation.';
   return `Department map at minute ${Math.round(state.minute)}. ${state.live.census} active synthetic patients, ${state.live.waiting} waiting, ${state.live.boarders} boarders, and ${state.live.imagingQueue} waiting for diagnostics.`;
+}
+
+function physicalLocationLabel(patient: PatientSnapshotV2): string {
+  if (patient.locationId === 'overflowWaiting') return 'Waiting room';
+  return (
+    VISUALIZER_LOCATIONS.find((location) => location.id === patient.locationId)?.label ??
+    patient.locationId
+  );
 }
 
 export function DepartmentMap({
@@ -78,13 +48,17 @@ export function DepartmentMap({
   onFocusPane,
 }: DepartmentMapProps) {
   const resources = useMemo(() => Object.values(state?.resources ?? {}), [state]);
-  const patients = useMemo(() => Object.values(state?.patients ?? {}).slice(0, 300), [state]);
+  const patients = useMemo(
+    () => Object.values(state?.patients ?? {}).filter((patient) => patient.active),
+    [state],
+  );
   const patientsByLocation = useMemo(() => {
     const values = new Map<string, PatientSnapshotV2[]>();
     for (const patient of patients) {
-      const group = values.get(patient.locationId) ?? [];
+      const locationId = displayLocationForPatient(patient);
+      const group = values.get(locationId) ?? [];
       group.push(patient);
-      values.set(patient.locationId, group);
+      values.set(locationId, group);
     }
     for (const group of values.values()) group.sort((a, b) => a.id - b.id);
     return values;
@@ -118,11 +92,28 @@ export function DepartmentMap({
           </filter>
         </defs>
         <rect className="map-canvas" x="0" y="0" width="1000" height="620" rx="10" />
-        <path className="map-route" d="M150 130H190M360 130H400M740 230H780M740 450H780" />
+        <path className="map-route" d="M150 130H190M360 130H400M740 230H780M740 450H760" />
         {VISUALIZER_LOCATIONS.map((location) => {
           const geometry = zoneGeometry(location);
-          const zoneResources = resources.filter((resource) => resource.locationId === location.id);
+          const zoneResources = resources
+            .filter((resource) => resource.locationId === location.id)
+            .sort((a, b) => a.ordinal - b.ordinal);
           const zonePatients = patientsByLocation.get(location.id) ?? [];
+          const layout = layoutZoneEntities(geometry, zoneResources.length, zonePatients.length);
+          const offRoomBoarders =
+            location.id === 'boarding'
+              ? zonePatients.filter((patient) => patient.locationId === 'boarding').length
+              : 0;
+          const roomHoldingBoarders =
+            location.id === 'boarding'
+              ? zonePatients.filter((patient) => patient.assignedTreatmentResourceId != null).length
+              : 0;
+          const zoneDetail =
+            location.id === 'waiting'
+              ? 'No census cap'
+              : location.id === 'boarding' && zonePatients.length > 0
+                ? `${offRoomBoarders} off-room · ${roomHoldingBoarders} holding care spaces`
+                : undefined;
           return (
             <g key={location.id} className={`map-zone-svg map-zone-svg--${location.group}`}>
               <rect {...geometry} rx="7" />
@@ -134,8 +125,15 @@ export function DepartmentMap({
                 y={geometry.y + 18}
                 className="map-zone-count"
               >
-                {zonePatients.length > 0 ? `${zonePatients.length} patients` : ''}
+                {zonePatients.length > 0
+                  ? `${zonePatients.length} ${zonePatients.length === 1 ? 'patient' : 'patients'}`
+                  : ''}
               </text>
+              {zoneDetail && (
+                <text x={geometry.x + 10} y={geometry.y + 31} className="map-zone-detail">
+                  {zoneDetail}
+                </text>
+              )}
               <text
                 x={geometry.x + 10}
                 y={geometry.y + geometry.height - 8}
@@ -143,8 +141,8 @@ export function DepartmentMap({
               >
                 {GROUP_LABELS[location.group]}
               </text>
-              {zoneResources.map((resource) => {
-                const point = resourcePosition(resource, location);
+              {zoneResources.map((resource, index) => {
+                const point = layout.resources[index]!;
                 const selected =
                   selection?.kind === 'resource' &&
                   selection.slot === slot &&
@@ -166,24 +164,24 @@ export function DepartmentMap({
                     aria-hidden="true"
                   >
                     <rect
-                      x={point.x - 5}
-                      y={point.y - 5}
-                      width="11"
-                      height="11"
-                      rx="2"
+                      x={point.x - point.radius}
+                      y={point.y - point.radius}
+                      width={point.radius * 2}
+                      height={point.radius * 2}
+                      rx={Math.min(2, point.radius * 0.35)}
                       fill={fill}
                     />
                     {resource.state === 'available' && (
-                      <circle cx={point.x + 0.5} cy={point.y + 0.5} r="1.5" />
+                      <circle cx={point.x} cy={point.y} r={Math.max(0.3, point.radius * 0.28)} />
                     )}
                     {selected && (
                       <rect
                         className="resource-selection"
-                        x={point.x - 8}
-                        y={point.y - 8}
-                        width="17"
-                        height="17"
-                        rx="4"
+                        x={point.x - point.radius - 2.5}
+                        y={point.y - point.radius - 2.5}
+                        width={point.radius * 2 + 5}
+                        height={point.radius * 2 + 5}
+                        rx={Math.min(4, point.radius * 0.7)}
                       />
                     )}
                     <title>{`${resource.label}: ${resource.state}`}</title>
@@ -191,12 +189,17 @@ export function DepartmentMap({
                 );
               })}
               {zonePatients.map((patient, index) => {
-                const point = patientPosition(patient, location, index);
+                const point = layout.patients[index]!;
                 const selected =
                   selection?.kind === 'patient' &&
                   selection.slot === slot &&
                   selection.id === patient.id;
                 const boarding = patient.statuses.includes('admittedAwaitingBed');
+                const physicalLocation = physicalLocationLabel(patient);
+                const displayedLocation =
+                  physicalLocation === location.label
+                    ? location.label
+                    : `${location.label}; modeled location: ${physicalLocation}`;
                 return (
                   <g
                     key={patient.id}
@@ -207,14 +210,11 @@ export function DepartmentMap({
                     }}
                     aria-hidden="true"
                   >
-                    {boarding && (
-                      <circle className="patient-boarder-ring" cx={point.x} cy={point.y} r="7.2" />
-                    )}
                     <circle
-                      className={`patient-dot patient-dot--esi-${patient.esi}`}
+                      className={`patient-dot patient-dot--esi-${patient.esi}${boarding ? ' is-boarder' : ''}`}
                       cx={point.x}
                       cy={point.y}
-                      r={selected ? 5.8 : 4.5}
+                      r={point.radius}
                       filter={selected ? `url(#selected-glow-${slot})` : undefined}
                     />
                     {selected && (
@@ -222,10 +222,10 @@ export function DepartmentMap({
                         className="patient-selection-ring"
                         cx={point.x}
                         cy={point.y}
-                        r="9.5"
+                        r={point.radius + 2.5}
                       />
                     )}
-                    <title>{`${patient.displayId}, ESI ${patient.esi}, ${location.label}`}</title>
+                    <title>{`${patient.displayId}, ESI ${patient.esi}, ${displayedLocation}`}</title>
                   </g>
                 );
               })}

@@ -198,23 +198,23 @@ export function ScenarioLevers({
       <section className="lever-group" aria-labelledby="output-levers">
         <h3 id="output-levers">Output</h3>
         <Lever
-          label="Dedicated boarding spaces"
+          label="Off-room boarding spaces"
           value={scenario.capacities.boardingBeds}
           min={0}
-          max={24}
+          max={80}
           disabled={disabled}
-          detail="A free boarding space releases the original treatment room. When full, the admitted patient blocks that room."
+          detail="These finite spaces release treatment rooms. Total boarder census is uncapped; excess boarders continue to hold care spaces."
           onChange={(value) => updateCapacity('boardingBeds', value)}
         />
         <Lever
           label="Median inpatient delay"
           value={scenario.durations.boardingMedian}
           min={30}
-          max={900}
-          step={30}
+          max={4320}
+          step={10}
           suffix="min"
           disabled={disabled}
-          detail="Changes the aggregate post-admission delay; downstream inpatient units are not simulated yet."
+          detail="Changes the synthetic post-admission delay, up to 72 hours. Downstream inpatient units are not simulated yet."
           onChange={(value) =>
             onChange({ ...scenario, durations: { ...scenario.durations, boardingMedian: value } })
           }

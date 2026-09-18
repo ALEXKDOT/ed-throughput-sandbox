@@ -3513,6 +3513,12 @@ thead th {
   text-anchor: end;
 }
 
+.map-zone-detail {
+  fill: #607783;
+  font-size: 7px;
+  font-weight: 700;
+}
+
 .map-zone-group {
   fill: #71858f;
   font-size: 6.5px;
@@ -3609,8 +3615,7 @@ thead th {
   background: #4b866c;
 }
 
-.patient-selection-ring,
-.patient-boarder-ring {
+.patient-selection-ring {
   fill: none;
   pointer-events: none;
 }
@@ -3620,9 +3625,9 @@ thead th {
   stroke-width: 2;
 }
 
-.patient-boarder-ring {
+.patient-dot.is-boarder {
   stroke: #76500d;
-  stroke-width: 1.5;
+  stroke-width: 1.8;
   stroke-dasharray: 2 1.5;
 }
 
@@ -3884,8 +3889,7 @@ thead th {
 
 .resource-note,
 .journey-section p,
-.list-empty,
-.list-limit {
+.list-empty {
   color: var(--ink-muted);
   font-size: 9px;
   line-height: 1.5;

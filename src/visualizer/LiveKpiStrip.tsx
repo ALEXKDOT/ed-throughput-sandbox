@@ -33,7 +33,7 @@ const KPI_DEFINITIONS: {
 }[] = [
   { key: 'census', label: 'ED census', series: 'census' },
   { key: 'doorToRoom', label: 'Door to room' },
-  { key: 'waiting', label: 'Waiting · overflow', series: 'waiting' },
+  { key: 'waiting', label: 'Waiting', series: 'waiting' },
   { key: 'occupiedTreatment', label: 'Treatment spaces', series: 'occupiedTreatment' },
   { key: 'imagingQueue', label: 'Diagnostic queue', series: 'imagingQueue' },
   { key: 'boarders', label: 'Boarders', series: 'boarders' },
@@ -43,7 +43,7 @@ const KPI_DEFINITIONS: {
 function valueFor(key: KpiKey, state?: ReplayStateV2): string {
   if (!state) return '—';
   if (key === 'doorToRoom') return formatDurationV2(state.live.medianDoorToRoom);
-  if (key === 'waiting') return `${state.live.waiting} · ${state.live.overflowWaiting}`;
+  if (key === 'waiting') return String(state.live.waiting);
   if (key === 'occupiedTreatment') {
     return `${state.live.occupiedTreatment}/${state.live.treatmentCapacity}`;
   }

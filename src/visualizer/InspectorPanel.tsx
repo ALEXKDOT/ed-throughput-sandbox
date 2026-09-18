@@ -265,7 +265,7 @@ export function InspectorPanel({
         </div>
       ) : tab === 'patients' ? (
         <div className="census-list" role="list" aria-label="Active synthetic patients">
-          {patients.slice(0, 100).map((patient) => (
+          {patients.map((patient) => (
             <button
               key={patient.id}
               type="button"
@@ -283,11 +283,6 @@ export function InspectorPanel({
           ))}
           {patients.length === 0 && (
             <p className="list-empty">No active patients match this filter.</p>
-          )}
-          {patients.length > 100 && (
-            <p className="list-limit">
-              Showing 100 of {patients.length}; refine the filter to narrow the census.
-            </p>
           )}
         </div>
       ) : (
