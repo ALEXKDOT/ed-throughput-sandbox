@@ -54,7 +54,7 @@ This log records consequential product, model, and engineering choices. D-001 th
 
 ### D-023 — Adapt interaction patterns, not EdSim's domain framing
 
-**Decision.** Independently implement a persistent clock, replay controls, visible patients/resources, inspectors, quick transparent levers, synchronized A/B, and deep results. Exclude NHS workflows, staff/rota/cost modeling, RAG recommendations, live-record integration, copied presets, wording, code, or assets.
+**Decision.** Independently implement a persistent clock, replay controls, visible patients/resources, inspectors, scenario settings, synchronized A/B, and replication results. Exclude NHS workflows, staff/rota/cost modeling, RAG recommendations, live-record integration, copied presets, wording, code, or assets.
 
 **Alternatives considered.** Clone the competitor's full surface or ignore the reference entirely.
 

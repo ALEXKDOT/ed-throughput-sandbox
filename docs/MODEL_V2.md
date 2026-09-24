@@ -2,18 +2,18 @@
 
 ## Status and intended use
 
-Model v2 powers the separate **Visualizer** workspace. It is a synthetic, client-side discrete-event simulation designed for visual understanding, hypothesis formation, and controlled scenario comparison. It is not calibrated to an institution, is not a forecasting model, and must not be used for clinical, staffing, regulatory, or operational decisions.
+Model v2 powers the separate **Visualizer** workspace. It is a synthetic, client-side discrete-event simulation for patient and resource replay and scenario comparison. It is not calibrated to an institution, is not a forecasting model, and must not be used for clinical, staffing, regulatory, or operational decisions.
 
 The released Sandbox model remains model/schema v1. V2 has separate types, validation, persistence, random streams, worker messages, event logic, results, and replay traces. A v1 scenario is not silently treated as a v2 scenario because its three operational tiers, capacity semantics, and composite service model are materially different.
 
-## 1. Simulation horizon and evidence layers
+## 1. Simulation horizon and results
 
 Each default replication begins with a 24-hour warm-up and then observes a seven-day half-open interval `[0, 10,080)`. The visible replay begins at analysis minute 0 and includes active patients carried in from warm-up.
 
 The Visualizer intentionally presents two different data products:
 
-1. **Representative trajectory.** One completed replication is selected deterministically and rerun with trace recording. Patient dots, resource states, the clock, current census, and journey inspection all describe this one trajectory.
-2. **Ensemble evidence.** Summary measures and hourly uncertainty bands are calculated across all configured replications. Displayed ranges are the 10th–90th percentile across replications, not confidence intervals.
+1. **Representative trajectory.** One completed replication is selected deterministically and rerun with trace recording. Patient dots, resource states, the clock, current census, and patient event inspection all describe this one trajectory.
+2. **Replication summary.** Summary measures and hourly uncertainty bands are calculated across all configured replications. Displayed ranges are the 10th–90th percentile across replications, not confidence intervals.
 
 The representative animation never substitutes for the repeated-run results.
 
@@ -68,7 +68,7 @@ Triage and all subsequent queues use ESI 1 before 2 before 3 before 4 before 5. 
 
 ### 4.2 Treatment-space routing
 
-Treatment-space eligibility is deliberately simple and explicit:
+Treatment-space eligibility follows these rules:
 
 - ESI 1 prefers trauma, then main treatment, then hallway treatment.
 - ESI 2 prefers main treatment, then trauma, then hallway treatment.
@@ -88,7 +88,7 @@ Treatment and diagnostic durations use a conditional truncated lognormal transfo
 
 Pathway assignment remains a fixed synthetic rule, not a fitted clinical model. Behavioral health is assigned to 8% of arrivals. Among ESI 4–5 arrivals, minor injury accounts for the next 44%; among ESI 1–3, it accounts for the next 20%. Abdominal accounts for the next 10% or 34%, respectively, and the remainder is medical. Diagnostic-order probabilities are configurable in the advanced setup. Defaults are lab at 86% for abdominal, 70% for medical, 32% for behavioral health, and 12% for minor injury; X-ray at 68% for minor injury; CT at 52% for ESI 1–2 medical, 30% for other medical, and 46% for abdominal; ultrasound at 34% for abdominal; and MRI at 4.5% for medical and behavioral health. Selected services run sequentially in the fixed generated order.
 
-The setup panel shows an approximate diagnostic-capacity check. For each modality it combines mean arrivals, the current ESI/pathway mix, diagnostic-order probabilities, configured capacity, the global duration scale, and the untruncated lognormal mean factor. It labels 85%–99% approximate utilization as tight and 100% or more as overloaded. This is a pre-run warning that intentionally ignores peak-hour transients, truncation, queue interactions, and treatment-space blocking; simulation results remain the evidence layer.
+The setup panel shows an approximate diagnostic-capacity check. For each modality it combines mean arrivals, the current ESI/pathway mix, diagnostic-order probabilities, configured capacity, the global duration scale, and the untruncated lognormal mean factor. It labels 85%–99% approximate utilization as tight and 100% or more as overloaded. This is a pre-run warning that intentionally ignores peak-hour transients, truncation, queue interactions, and treatment-space blocking; run the simulation to calculate queues and patient outcomes.
 
 ### 4.4 Disposition, discharge, and boarding
 
@@ -110,7 +110,7 @@ The engine advances directly to the next event. Events at one timestamp are proc
 
 Insertion sequence is the final tie-break. A trace frame is emitted only after the full batch and dispatch, so the replay does not expose zero-duration intermediate overcapacity.
 
-The v2 contract supports scheduled capacity additions, arrival-rate scaling, service-duration scaling, and boarding-duration scaling. Intervention times are whole minutes in the half-open simulation window; a change at the terminal boundary is rejected because it would have no analytic exposure. Validation allows at most 100 interventions and 20 actions per intervention, caps cumulative resources at 80 per kind and 300 total, keeps cumulative service/boarding scale factors within 0.05×–10× (including their combined boarding effect), and limits the configured peak arrival rate to 150 per hour before work reaches the simulation worker. The current quick-lever UI applies combined scenario changes for the whole rerun. Interactive mid-replay branching and scheduled opening/closing controls remain deferred.
+The v2 contract supports scheduled capacity additions, arrival-rate scaling, service-duration scaling, and boarding-duration scaling. Intervention times are whole minutes in the half-open simulation window; a change at the terminal boundary is rejected because it would have no analytic exposure. Validation allows at most 100 interventions and 20 actions per intervention, caps cumulative resources at 80 per kind and 300 total, keeps cumulative service/boarding scale factors within 0.05×–10× (including their combined boarding effect), and limits the configured peak arrival rate to 150 per hour before work reaches the simulation worker. The current scenario settings panel applies combined scenario changes for the whole rerun. Interactive mid-replay branching and scheduled opening/closing controls remain deferred.
 
 ## 6. Random streams and paired comparison
 
@@ -127,7 +127,7 @@ The worker first runs compact summaries for every replication. It selects the re
 Only the selected replication is rerun with trace recording. The trace contains:
 
 - ordered stable timestamp frames;
-- semantic journey events;
+- labeled patient events;
 - patient/resource state patches;
 - an analysis-start checkpoint;
 - periodic checkpoints approximately hourly and at analysis end;
@@ -164,7 +164,7 @@ Representative selection uses door-to-room, LOS, boarder-hours, waiting patient-
 - Resources do not yet have separate minimum/design/maximum capacity semantics.
 - No drag-and-drop/floorplan authoring or institution template editor yet.
 - No mid-replay branch from an opaque current state; users change assumptions and rerun from the same seed.
-- Resource closing/dirty workflows are typed for later work but not exposed as current scenario levers.
+- Resource closing/dirty workflows are typed for later work but not exposed as current scenario settings.
 - The Visualizer is intentionally desktop-first. The released Sandbox remains responsive on small screens.
 - Sandbox v1 deliberately retains its historical three operational tiers. Migrating the basic editor to actual ESI 1–5 is a separate schema decision rather than part of this v2 workspace release.
 

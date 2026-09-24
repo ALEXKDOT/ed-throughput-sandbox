@@ -83,7 +83,7 @@ function PatientDetails({
         </div>
       </div>
       <div className="journey-section">
-        <strong>Journey to this point</strong>
+        <strong>Recent patient events</strong>
         {journey.length > 0 ? (
           <ol>
             {journey.map(({ minute: eventMinute, event }, index) => (
@@ -94,7 +94,7 @@ function PatientDetails({
             ))}
           </ol>
         ) : (
-          <p>No visible-week journey events yet.</p>
+          <p>No patient events recorded in the visible week at this time.</p>
         )}
       </div>
     </article>
@@ -132,11 +132,11 @@ function ResourceDetails({
           <dd>{resource.queueLength} waiting</dd>
         </div>
         <div>
-          <dt>Current owner</dt>
+          <dt>Assigned patient</dt>
           <dd>{occupant?.displayId ?? 'None'}</dd>
         </div>
         <div>
-          <dt>Ownership</dt>
+          <dt>Assignment state</dt>
           <dd>
             {resource.state === 'reserved'
               ? 'Held during diagnostic travel'
@@ -257,10 +257,10 @@ export function InspectorPanel({
         </>
       ) : !state ? (
         <div className="inspector-empty">
-          <strong>Run, then select an entity</strong>
+          <strong>Run a scenario to inspect patients and resources</strong>
           <p>
-            The inspector will separate physical location, concurrent statuses, waits, and journey
-            history.
+            Select a patient to view location, statuses, waits, and recent events. Select a resource
+            to view its state, queue, and assigned patient.
           </p>
         </div>
       ) : tab === 'patients' ? (

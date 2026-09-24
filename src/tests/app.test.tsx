@@ -40,7 +40,7 @@ describe('application shell', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'See patient flow, then test what changes it.',
+        name: 'Emergency department flow visualizer',
       }),
     ).toBeVisible();
     expect(screen.getByRole('button', { name: 'Run Scenario A' })).toBeVisible();

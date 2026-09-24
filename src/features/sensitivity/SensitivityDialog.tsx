@@ -117,24 +117,24 @@ export function SensitivityDialog({
       >
         <div className="dialog-header">
           <div>
-            <span className="section-kicker">One parameter at a time</span>
-            <h2 id="sensitivity-title">Sensitivity explorer</h2>
+            <span className="section-kicker">Parameter sweep</span>
+            <h2 id="sensitivity-title">Sensitivity analysis</h2>
           </div>
           <button
             ref={closeRef}
             type="button"
             className="icon-button"
             onClick={onClose}
-            aria-label="Close sensitivity explorer"
+            aria-label="Close sensitivity analysis"
           >
             ×
           </button>
         </div>
         <p>
           Sweep up to seven valid values around the active scenario while preserving the seed
-          structure. At a tight integer boundary, every distinct valid value is used. This explores
-          one assumption at a time and does not evaluate interactions among simultaneous changes,
-          establish causality, or predict real-world effectiveness.
+          structure. At a tight integer boundary, every distinct valid value is used. The sweep
+          varies one assumption at a time and does not evaluate interactions among simultaneous
+          changes, establish causality, or predict real-world effectiveness.
         </p>
         <div className="sensitivity-controls">
           <label>

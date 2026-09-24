@@ -84,11 +84,11 @@ export function ResultsDashboard({
             24h
           </span>
           <div>
-            <span className="section-kicker">Ready to simulate</span>
-            <h2 id="results-title">See how the system responds</h2>
+            <span className="section-kicker">Simulation results</span>
+            <h2 id="results-title">Run a scenario</h2>
             <p>
-              Run repeated seeded simulations to estimate waits, occupancy, flow, and boarding—with
-              10th–90th percentile uncertainty intervals across replications.
+              Run repeated seeded simulations to estimate waits, occupancy, departures, and
+              boarding. Results include 10th–90th percentile intervals across replications.
             </p>
             <button
               type="button"
@@ -101,10 +101,10 @@ export function ResultsDashboard({
           </div>
         </div>
         <div className="why-card">
-          <strong>Why this exists</strong>
+          <strong>Model scope</strong>
           <p>
-            Crowding rarely has a single cause. This sandbox makes system interactions visible so
-            users can test operational hypotheses before working with institution-specific data.
+            The model links arrivals, treatment capacity, care duration, and boarding. Results
+            reflect synthetic assumptions and are not predictions for a specific department.
           </p>
         </div>
       </section>

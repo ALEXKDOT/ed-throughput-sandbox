@@ -191,8 +191,8 @@ export function ScenarioLevers({
     <aside className="visualizer-setup" aria-labelledby="setup-title">
       <div className="panel-heading-row">
         <div>
-          <span className="section-kicker">Experiment</span>
-          <h2 id="setup-title">Quick levers</h2>
+          <span className="section-kicker">Assumptions</span>
+          <h2 id="setup-title">Scenario settings</h2>
         </div>
         {stale[activeSlot] && (
           <span className="configuration-state configuration-state--stale">Changes not run</span>
@@ -215,7 +215,7 @@ export function ScenarioLevers({
         </button>
       </div>
       <p className="panel-description">
-        Adjust assumptions, then rerun. Each control below states exactly what changes in the model.
+        Set assumptions for the selected scenario, then run the simulation.
       </p>
 
       <section className="lever-group" aria-labelledby="demand-levers">
@@ -322,7 +322,7 @@ export function ScenarioLevers({
           step={10}
           suffix="min"
           disabled={disabled}
-          detail="Changes the synthetic post-admission delay, up to 72 hours. Downstream inpatient units are not simulated yet."
+          detail="Changes the synthetic post-admission delay, up to 72 hours. Downstream inpatient units are not simulated."
           onChange={(value) =>
             onChange({ ...scenario, durations: { ...scenario.durations, boardingMedian: value } })
           }
@@ -566,8 +566,8 @@ export function ScenarioLevers({
           Generate new shared seed
         </button>
         <p>
-          Staffing and cost are deliberately omitted. Any added bed, room, or machine assumes
-          matching staff and support capacity.
+          Staffing and cost are not modeled. Any added bed, room, or machine assumes matching staff
+          and support capacity.
         </p>
       </details>
     </aside>

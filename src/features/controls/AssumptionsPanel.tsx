@@ -127,7 +127,11 @@ export function AssumptionsPanel({
         id="domain-input"
         className={`domain-card domain-card--input${compactDomain === 'input' ? ' is-compact-active' : ''}`}
       >
-        <DomainHeading domain="input" title="Input" description="Who arrives, and when" />
+        <DomainHeading
+          domain="input"
+          title="Input"
+          description="Arrival volume, timing, and acuity"
+        />
         <div className="domain-card-body">
           <SliderField
             label="Mean arrivals"
@@ -220,7 +224,7 @@ export function AssumptionsPanel({
         <DomainHeading
           domain="throughput"
           title="Throughput"
-          description="Where treatment happens, and for how long"
+          description="Treatment capacity and duration"
         />
         <div className="domain-card-body">
           <SliderField
@@ -310,7 +314,7 @@ export function AssumptionsPanel({
         <DomainHeading
           domain="output"
           title="Output"
-          description="Who is admitted, and how long spaces remain blocked"
+          description="Admissions and boarding duration"
         />
         <div className="domain-card-body">
           <SliderField

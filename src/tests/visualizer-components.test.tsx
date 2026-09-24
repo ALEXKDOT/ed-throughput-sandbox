@@ -36,11 +36,11 @@ function syntheticPatient(
 describe('Visualizer workspace', () => {
   it('presents transparent model boundaries and five-level ESI encoding', () => {
     render(<VisualizerApp onOpenSandbox={vi.fn()} />);
-    expect(screen.getByText(/Staffing and cost are deliberately omitted/u)).not.toBeVisible();
+    expect(screen.getByText(/Staffing and cost are not modeled/u)).not.toBeVisible();
     expect(screen.getByText('Inpatient destinations')).toBeInTheDocument();
     expect(screen.getAllByText('ESI 1').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ESI 5').length).toBeGreaterThan(0);
-    expect(screen.getByText(/Run the simulation to choose/u)).toBeVisible();
+    expect(screen.getByText(/Run the simulation to select/u)).toBeVisible();
   });
 
   it('creates an editable intervention from the baseline', async () => {

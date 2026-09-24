@@ -2,7 +2,7 @@
 
 ## Status and intended use
 
-ED Throughput Sandbox is a **synthetic, educational, client-side discrete-event simulation (DES)**. It is designed to make interactions among demand, treatment-space capacity, composite treatment time, admission pressure, and boarding visible. It is not calibrated to any institution, is not a forecasting model, and must not be used for staffing, clinical, regulatory, or operational decisions.
+ED Throughput Sandbox is a **synthetic, educational, client-side discrete-event simulation (DES)**. It models arrivals, treatment-space capacity, composite treatment time, admissions, and boarding. It is not calibrated to any institution, is not a forecasting model, and must not be used for staffing, clinical, regulatory, or operational decisions.
 
 Every numerical default, preset, guardrail, arrival-profile shape, distribution spread, and truncation bound in this document is a project-specific illustrative assumption unless explicitly identified otherwise. The cited literature supports the conceptual framework, definitions, or modeling methods; it does **not** validate the app's defaults as hospital benchmarks. See [SOURCES.md](./SOURCES.md).
 
@@ -65,7 +65,7 @@ Each replication runs for 2,880 minutes:
 
 The system begins empty at minute 0. Arrivals occur throughout both periods, using the same daily intensity profile repeated on day two but independent random draws for each absolute hour. Patients and backlog present at minute 1,440 carry into the analysis period. Nothing observed before minute 1,440 is included in reported event counts, patient-event cohorts, or time integrals.
 
-The warm-up reduces the artificial advantage of starting with an empty ED [S5](./SOURCES.md#s5-law-2015), [S7](./SOURCES.md#s7-grassmann-2014). Twenty-four hours is a transparent project choice aligned to one daily arrival cycle; it is not proof that initialization bias has vanished. In severely overloaded scenarios a stationary regime may not exist, and a one-day warm-up may be inadequate. The app must state that limitation.
+The warm-up reduces the artificial advantage of starting with an empty ED [S5](./SOURCES.md#s5-law-2015), [S7](./SOURCES.md#s7-grassmann-2014). Twenty-four hours matches one daily arrival cycle; it is not proof that initialization bias has vanished. In severely overloaded scenarios a stationary regime may not exist, and a one-day warm-up may be inadequate. The app must state that limitation.
 
 The analysis interval is half-open. An event at exactly minute 1,440 belongs to the analysis period; an event at exactly minute 2,880 does not. End-of-period state means the left-hand state at `2,880−`.
 
@@ -573,7 +573,7 @@ Aggregate defined `p_r` values across replications and disclose the valid pair c
 
 The worker aggregates percentage changes in both directions directly from the paired replication values: `B` relative to `A`, and `A` relative to `B`. Swapping scenarios selects the already-aggregated reverse direction. It must not apply a nonlinear denominator conversion to an interval that has already been aggregated, because type-7 quantile interpolation and that conversion do not commute.
 
-## 14. Sensitivity explorer
+## 14. Sensitivity analysis
 
 One-at-a-time sensitivity analysis changes one selected parameter over up to seven distinct valid values while holding all other scenario inputs fixed. A bounded integer parameter may yield fewer points when its valid domain is smaller; for example, fast-track allocation has five valid values when total treatment spaces equal five. Every point uses the same master seed and replication-index structure. The interface must disclose the replication count per point if it is lower than the main run.
 

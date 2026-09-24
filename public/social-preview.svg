@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
   <title id="title">ED Throughput Sandbox</title>
-  <desc id="desc">A restrained educational simulation graphic showing input, throughput, output, and a 24-hour flow trace under synthetic assumptions.</desc>
+  <desc id="desc">Diagram of input, throughput, output, and a 24-hour flow trace under synthetic assumptions.</desc>
   <rect width="1280" height="640" fill="#f4f7f9"/>
   <rect x="54" y="54" width="1172" height="532" rx="18" fill="#fff" stroke="#cad5dc" stroke-width="2"/>
   <g transform="translate(94 92)">
@@ -11,7 +11,7 @@
   </g>
   <text x="174" y="115" fill="#075e73" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="2">SYNTHETIC DISCRETE-EVENT SIMULATION</text>
   <text x="94" y="218" fill="#132b3a" font-family="Inter,Arial,sans-serif" font-size="64" font-weight="750" letter-spacing="-2">ED Throughput Sandbox</text>
-  <text x="94" y="268" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="25">Explore demand, capacity, care duration, admission pressure, and boarding.</text>
+  <text x="94" y="268" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="25">Model arrivals, capacity, care duration, admissions, and boarding.</text>
   <g transform="translate(94 326)" font-family="Inter,Arial,sans-serif">
     <rect width="270" height="104" rx="10" fill="#eef5f9" stroke="#c7d9e3"/>
     <circle cx="34" cy="34" r="10" fill="none" stroke="#175e8c" stroke-width="4"/>
@@ -29,7 +29,7 @@
       <rect width="270" height="104" rx="10" fill="#fbf6e9" stroke="#e3d6ad"/>
       <rect x="27" y="27" width="16" height="16" transform="rotate(45 35 35)" fill="none" stroke="#855700" stroke-width="4"/>
       <text x="58" y="41" fill="#132b3a" font-size="22" font-weight="700">Output</text>
-      <text x="26" y="77" fill="#526874" font-size="16">Admission · boarding · flow</text>
+      <text x="26" y="77" fill="#526874" font-size="16">Admission · boarding · departure</text>
     </g>
   </g>
   <text x="94" y="466" fill="#526874" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1.3">EDUCATIONAL · SYNTHETIC ASSUMPTIONS · NO PATIENT DATA</text>

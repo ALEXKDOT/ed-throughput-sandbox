@@ -45,7 +45,7 @@ export function MethodologyDialog({ open, scenario, onClose }: MethodologyDialog
       >
         <div className="dialog-header">
           <div>
-            <span className="section-kicker">Transparent by design</span>
+            <span className="section-kicker">Model assumptions and sources</span>
             <h2 id="methodology-title">Methodology</h2>
           </div>
           <button
@@ -165,7 +165,7 @@ export function MethodologyDialog({ open, scenario, onClose }: MethodologyDialog
             )}
             {section === 'limits' && (
               <>
-                <h3>Deliberately simplified</h3>
+                <h3>Omitted processes</h3>
                 <p>
                   Treatment duration is a composite operational interval. The model does not
                   separately simulate clinicians, diagnostics, resuscitation resources, inpatient
@@ -179,9 +179,8 @@ export function MethodologyDialog({ open, scenario, onClose }: MethodologyDialog
                 </div>
                 <h3>Appropriate use</h3>
                 <p>
-                  Use the sandbox to learn systems thinking, inspect model behavior, and generate
-                  hypotheses. Do not use it for staffing, clinical, regulatory, or real operational
-                  decisions.
+                  Use the sandbox to compare synthetic scenarios and inspect model behavior. Do not
+                  use it for staffing, clinical, regulatory, or real operational decisions.
                 </p>
                 <h3>Known structural effects</h3>
                 <ul>

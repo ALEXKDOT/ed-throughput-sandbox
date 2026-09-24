@@ -4,7 +4,7 @@
 
 ED Throughput Sandbox is an educational operations model, not a clinical dashboard. The interface should help a user form a question, change a small number of understandable assumptions, run a reproducible experiment, and interpret uncertainty without implying a real-world recommendation.
 
-The experience should feel calm, exact, and trustworthy enough for a clinical-operations review. It should not look like an electronic health record, a command center, or a generic analytics template.
+Use concise labels, explicit units, visible run state, and traceable assumptions and results throughout the interface.
 
 ### Experience principles
 
@@ -67,9 +67,9 @@ Use user-facing language first and model terminology second. For example, use �
 
 Each domain heading has a one-sentence explanation:
 
-- **Input — Who arrives, and when.**
-- **Throughput — How treatment spaces and care duration shape flow.**
-- **Output — How admission and boarding keep spaces occupied.**
+- **Input — Arrival volume, timing, and acuity.**
+- **Throughput — Treatment capacity and duration.**
+- **Output — Admissions and boarding duration.**
 
 Advanced controls open together in an “Advanced assumptions” disclosure at the bottom of the assumptions editor, not in a detached page. At 900 px and below, only the selected main domain is visible while this shared disclosure remains directly available.
 
@@ -79,7 +79,7 @@ Results are ordered from orientation to detail:
 
 1. Persistent stale/error/cancellation notice when applicable.
 2. Run provenance, uncertainty definition, export, and print actions.
-3. In Compare mode, changed assumptions, aligned A/B/paired-delta results, and a model-bounded interpretation appear before either scenario’s detailed charts.
+3. In Compare mode, changed assumptions, aligned A/B/paired-delta results, and a comparison interpretation appear before either scenario’s detailed charts.
 4. A compact Input → Throughput → Output map.
 5. Eight headline summary metrics in a 4 × 2 desktop or 2-column compact grid: median wait, 90th-percentile wait, boarder-hours, departures, average occupied spaces, time at or above 90% occupancy, peak queue, and patients remaining in the system.
 6. An open-by-default, collapsible Additional measures grid completes the 15 required summaries: arrivals, end-state waiting and occupancy, three length-of-stay measures, and peak occupancy.
@@ -100,8 +100,8 @@ Results are ordered from orientation to detail:
 
 Implemented initial empty-state copy:
 
-> **See how the system responds**  
-> Run repeated seeded simulations to estimate waits, occupancy, flow, and boarding—with 10th–90th percentile uncertainty intervals across replications.
+> **Run a scenario**\
+> Run repeated seeded simulations to estimate waits, occupancy, departures, and boarding. Results include 10th–90th percentile intervals across replications.
 
 ### Change and rerun
 
@@ -124,7 +124,7 @@ The notice includes “Run updated assumptions.” It is not a transient toast. 
 Comparison guidance copy:
 
 > **Create an intervention scenario**  
-> Copy Baseline into Scenario B, change one or more assumptions, then run both with the same seed for a clearer comparison.
+> Copy Baseline into Scenario B, change an assumption, and run both scenarios with the same seed.
 
 If demand assumptions differ, show this persistent warning directly above the comparison:
 
@@ -303,7 +303,7 @@ For an undefined metric:
 
 ### Interpretation panel
 
-Title it **Model-bounded interpretation**. It is a deterministic summary, never advice. It identifies the first listed configured difference, describes the median-wait and boarder-hour shifts, and repeats material comparison caveats.
+Title it **Comparison interpretation**. It is a deterministic summary, never advice. It identifies the first listed configured difference, describes the median-wait and boarder-hour shifts, and repeats material comparison caveats.
 
 Approved pattern:
 
@@ -411,7 +411,7 @@ The UI distinguishes application loading, simulation running, result absence, re
 | State                     | Behavior                                                                                                                                                                                                                       | Recommended copy                                                                           |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
 | App/code loading          | Reserve final layout dimensions. Use a short skeleton for lazy Sensitivity/Methodology content, not result numbers.                                                                                                            | “Loading methodology…”                                                                     |
-| Never run                 | Show a small experiment primer and the main run action. Do not show zeroes as if they were results.                                                                                                                            | “Ready to explore the balanced baseline.”                                                  |
+| Never run                 | Show simulation instructions and the main run action. Do not show zeroes as if they were results.                                                                                                                              | “Run a scenario.”                                                                          |
 | Running                   | Snapshot assumptions; controls may remain editable if a persistent notice explains that edits apply to the next run. Show determinate progress and Cancel. Keep prior completed results labeled “Previous run” when available. | “This run uses the assumptions captured when it started. Any edits apply to the next run.” |
 | Completed                 | Replace progress without layout shift; announce politely; retain provenance.                                                                                                                                                   | “Simulation complete. Results summarize 100 seeded replications.”                          |
 | Changes not run           | Preserve results with a persistent stale notice.                                                                                                                                                                               | “Assumptions changed. Results below are from the previous run.”                            |
@@ -487,15 +487,15 @@ Target WCAG 2.2 AA. Automated tests help, but manual keyboard, screen-reader, co
 
 **Subtitle**
 
-> Explore how demand, treatment capacity, care duration, admission pressure, and boarding interact in a simplified emergency-department flow model.
+> Model the effects of arrivals, treatment capacity, care duration, admissions, and boarding on emergency-department flow.
 
 **Supporting line**
 
-> Adjust a synthetic scenario, run repeated simulations, and compare operational tradeoffs—without using patient data.
+> Configure synthetic assumptions, run repeated simulations, and compare waits, occupancy, departures, and boarding.
 
-**Why this exists**
+**Model scope**
 
-> Crowding rarely has a single cause. This sandbox makes system interactions visible so users can test operational hypotheses before working with institution-specific data.
+> The model links arrivals, treatment capacity, care duration, and boarding. Results reflect synthetic assumptions and are not predictions for a specific department.
 
 **Status labels**
 

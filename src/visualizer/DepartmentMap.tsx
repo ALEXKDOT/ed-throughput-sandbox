@@ -248,8 +248,8 @@ export function DepartmentMap({
       {!state && (
         <div className="department-map-empty">
           <span aria-hidden="true" />
-          <strong>Ready for a representative week</strong>
-          <small>Run this scenario to populate its resources and synthetic patients.</small>
+          <strong>No simulation loaded</strong>
+          <small>Run this scenario to display resources and synthetic patients.</small>
         </div>
       )}
     </section>

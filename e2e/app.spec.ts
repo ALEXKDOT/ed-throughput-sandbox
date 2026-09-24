@@ -32,6 +32,26 @@ test('loads the complete orientation and passes an automated accessibility scan'
   expect(results.violations).toEqual([]);
 });
 
+test('downloads the illustrated instructions PDF from the visualizer title', async ({ page }) => {
+  await page.getByRole('button', { name: 'Open Visualizer', exact: true }).click();
+  const instructionsLink = page.getByRole('link', {
+    name: 'Download Instructions PDF',
+    exact: true,
+  });
+  await expect(instructionsLink).toBeVisible();
+
+  const downloadPromise = page.waitForEvent('download');
+  await instructionsLink.click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('ED_Throughput_Sandbox_Instructions.pdf');
+  expect(await download.failure()).toBeNull();
+  const pdfPath = await download.path();
+  expect(pdfPath).toBeTruthy();
+  const pdf = await readFile(pdfPath!);
+  expect(pdf.subarray(0, 5).toString('ascii')).toBe('%PDF-');
+  expect(pdf.byteLength).toBeGreaterThan(100_000);
+});
+
 test('runs the default scenario, renders uncertainty, and exports results', async ({ page }) => {
   await visibleRunButton(page).click();
   await expect(page.getByRole('heading', { name: /Results for Balanced baseline/u })).toBeVisible({
@@ -182,7 +202,7 @@ test('exports, imports, rejects invalid JSON atomically, and reopens a shared UR
   await expect(page.getByLabel('Active scenario name')).toHaveValue('Balanced baseline');
 });
 
-test('opens methodology and runs the one-at-a-time sensitivity explorer', async ({
+test('opens methodology and runs the one-at-a-time sensitivity analysis', async ({
   page,
 }, testInfo) => {
   await page.getByRole('button', { name: 'Methodology', exact: true }).click();
@@ -195,11 +215,11 @@ test('opens methodology and runs the one-at-a-time sensitivity explorer', async 
 
   test.skip(testInfo.project.name.includes('mobile'), 'Desktop run covers the same worker path.');
   await page.getByRole('button', { name: 'Sensitivity' }).click();
-  await expect(page.getByRole('dialog', { name: 'Sensitivity explorer' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Sensitivity analysis' })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.getByRole('button', { name: 'Run sensitivity' }).click();
   await expect(page.getByText(/replications per point/u)).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Close sensitivity explorer' }).click();
+  await page.getByRole('button', { name: 'Close sensitivity analysis' }).click();
   await page.getByLabel('Mean arrivals, numeric value').fill('7');
   await page.getByRole('button', { name: 'Sensitivity' }).click();
   await expect(page.getByText(/active scenario changed/u)).toBeVisible();

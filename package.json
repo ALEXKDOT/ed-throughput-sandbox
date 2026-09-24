@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "An interactive, browser-based discrete-event simulation for exploring emergency-department flow, capacity, and boarding scenarios.",
+  "description": "A browser-based discrete-event simulation for comparing emergency-department flow, capacity, and boarding scenarios.",
   "author": "Alexander Krawec",
   "license": "MIT",
   "homepage": "https://ALEXKDOT.github.io/ed-throughput-sandbox/",

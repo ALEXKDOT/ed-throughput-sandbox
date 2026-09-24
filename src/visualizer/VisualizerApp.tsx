@@ -331,9 +331,7 @@ export function VisualizerApp({ active = true, onOpenSandbox }: VisualizerAppPro
     setEditSlot('b');
     setInspectorSlot('b');
     setView('b');
-    setToast(
-      'Baseline copied into Intervention. Change one or more levers, then run side by side.',
-    );
+    setToast('Baseline copied into Intervention. Change assumptions, then run both scenarios.');
   };
 
   const newSeed = () => {
@@ -463,7 +461,7 @@ export function VisualizerApp({ active = true, onOpenSandbox }: VisualizerAppPro
         Skip to visualizer
       </a>
       <a className="skip-link skip-link--results" href="#visualizer-evidence">
-        Skip to evidence
+        Skip to results
       </a>
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}
@@ -519,10 +517,30 @@ export function VisualizerApp({ active = true, onOpenSandbox }: VisualizerAppPro
         <section className="visualizer-intro" aria-labelledby="visualizer-title">
           <div>
             <div className="eyebrow">Representative week · paired discrete-event simulation</div>
-            <h1 id="visualizer-title">See patient flow, then test what changes it.</h1>
+            <div className="visualizer-title-row">
+              <h1 id="visualizer-title">Emergency department flow visualizer</h1>
+              <a
+                className="primary-button instructions-download"
+                href={`${import.meta.env.BASE_URL}instructions/ED_Throughput_Sandbox_Instructions.pdf`}
+                download="ED_Throughput_Sandbox_Instructions.pdf"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5" />
+                </svg>
+                Download Instructions PDF
+              </a>
+            </div>
             <p>
-              Inspect one representative synthetic week while repeated simulations quantify the
-              range around it.
+              Replay one representative synthetic week. Compare median outcomes and 10th–90th
+              percentile ranges across repeated simulations.
             </p>
           </div>
           <div className="visualizer-run-summary" aria-label="Run status">
@@ -569,9 +587,9 @@ export function VisualizerApp({ active = true, onOpenSandbox }: VisualizerAppPro
               <small>{Math.round(progress * 100)}%</small>
             </div>
           ) : (
-            <div className="guided-steps" aria-label="Getting started">
+            <div className="guided-steps" aria-label="Simulation workflow">
               <span>
-                <b>1</b> Adjust
+                <b>1</b> Set assumptions
               </span>
               <span>
                 <b>2</b> Run
@@ -653,7 +671,7 @@ export function VisualizerApp({ active = true, onOpenSandbox }: VisualizerAppPro
           <section className="visualizer-stage" aria-labelledby="map-title">
             <div className="stage-heading">
               <div>
-                <span className="section-kicker">Live system</span>
+                <span className="section-kicker">Simulation replay</span>
                 <h2 id="map-title">Emergency department map</h2>
               </div>
               <div className="map-legend" aria-label="Map legend">

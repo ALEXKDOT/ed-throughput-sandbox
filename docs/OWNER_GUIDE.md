@@ -2,7 +2,7 @@
 
 This guide is the minimum conceptual preparation for describing ED Throughput Sandbox publicly. Read the normative [model specification](./MODEL.md) and [source map](./SOURCES.md) before making detailed claims.
 
-## The short, accurate framing
+## Project scope
 
 The project is a browser-based educational discrete-event simulation of simplified emergency-department flow. It uses synthetic aggregate assumptions and no patient data. It demonstrates how input, throughput, and output constraints can interact; it does not predict a hospital, recommend staffing, or establish that an intervention works.
 
@@ -43,7 +43,7 @@ The master seed is visible. A fixed integer mixer derives child streams by repli
 
 Starting at midnight with an empty ED creates an artificial low-occupancy period. The model first runs 24 hours without reporting, allowing queues, treatment, and boarding to carry into the analysis day. It then reports the next 24 hours. Warm-up state is retained, but warm-up arrivals, starts, departures, and state-time are not counted as analysis events.
 
-One day is a pragmatic educational warm-up, not proof of steady state. Highly overloaded scenarios may retain initialization effects or grow without stabilizing.
+The 24-hour warm-up does not establish steady state. Highly overloaded scenarios may retain initialization effects or grow without stabilizing.
 
 ## How capacity and boarding interact
 
@@ -67,7 +67,7 @@ The app calculates `B − A` inside each replication and then aggregates the del
 
 If demand differs, corresponding patient ordinals no longer represent the same arrival process, so the UI warns that both demand and operational changes contribute to the comparison.
 
-## Where the model is intentionally simplified
+## Model limitations
 
 - Three operational acuity tiers; no deterioration, reassessment, or preemption.
 - Treatment spaces are the only explicitly constrained treatment resource.

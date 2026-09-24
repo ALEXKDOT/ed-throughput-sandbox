@@ -493,7 +493,7 @@ export function App() {
         setSensitivityState('complete');
         setSensitivityProgress(1);
         setSensitivityAnnouncement(
-          'Sensitivity analysis complete. Results are ready in the sensitivity explorer.',
+          'Sensitivity analysis complete. Results are available in the sensitivity dialog.',
         );
         worker.terminate();
       }
@@ -728,7 +728,7 @@ export function App() {
           <Suspense
             fallback={
               <div className="dialog-loading" role="status">
-                Opening sensitivity explorer…
+                Opening sensitivity analysis…
               </div>
             }
           >

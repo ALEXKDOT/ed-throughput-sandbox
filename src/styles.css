@@ -282,6 +282,29 @@ a {
   letter-spacing: -0.03em;
 }
 
+.visualizer-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-bottom: 10px;
+}
+
+.visualizer-intro .instructions-download {
+  flex-shrink: 0;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 20px;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.instructions-download svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+
 .visualizer-intro p {
   max-width: 760px;
   margin: 0;

@@ -57,12 +57,12 @@ export function EvidencePanel({
         aria-labelledby="visualizer-evidence"
       >
         <div>
-          <span className="section-kicker">Evidence layer</span>
-          <h2 id="visualizer-evidence">One replay to understand. Repeated runs to compare.</h2>
+          <span className="section-kicker">Simulation results</span>
+          <h2 id="visualizer-evidence">Replay and replication results</h2>
         </div>
         <p>
-          Run the simulation to choose a statistically representative trajectory and calculate
-          10th–90th percentile ranges across the full ensemble.
+          Run the simulation to select a representative replication and calculate 10th–90th
+          percentile ranges across replications.
         </p>
       </section>
     );
@@ -88,7 +88,7 @@ export function EvidencePanel({
     <section className="visualizer-results" aria-labelledby="visualizer-evidence">
       <div className="visualizer-results-heading">
         <div>
-          <span className="section-kicker">Ensemble evidence</span>
+          <span className="section-kicker">Replication summary</span>
           <h2 id="visualizer-evidence">Repeated-run outcomes</h2>
           <p>
             Median and 10th–90th percentile across {result.replicationCount} replications. These

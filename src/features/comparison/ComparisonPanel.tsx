@@ -220,11 +220,11 @@ export function ComparisonPanel({ comparison }: { comparison: ComparisonResult }
           ≋
         </span>
         <div>
-          <h4 id="interpretation-title">Model-bounded interpretation</h4>
+          <h4 id="interpretation-title">Comparison interpretation</h4>
           <p>
             Within this synthetic model, Scenario B’s median wait was {waitPhrase}, while
             boarder-hours were {boarderPhrase}. The first configured difference was {largestChange}.
-            These conditional results generate hypotheses; they do not establish real-world effects.
+            Results apply to these synthetic assumptions; they do not establish real-world effects.
           </p>
         </div>
       </div>

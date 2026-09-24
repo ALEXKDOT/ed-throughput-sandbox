@@ -39,12 +39,12 @@ export function Header({ onMethodology, onSensitivity, onVisualizer }: HeaderPro
           <div className="eyebrow">Emergency department operations · discrete-event simulation</div>
           <h1 id="page-title">ED Throughput Sandbox</h1>
           <p className="hero-subtitle">
-            Explore how demand, treatment capacity, care duration, admission pressure, and boarding
-            interact in a simplified emergency-department flow model.
+            Model the effects of arrivals, treatment capacity, care duration, admissions, and
+            boarding on emergency-department flow.
           </p>
           <p className="hero-support">
-            Adjust a synthetic scenario, run repeated simulations, and compare operational
-            tradeoffs—without using patient data.
+            Configure synthetic assumptions, run repeated simulations, and compare waits, occupancy,
+            departures, and boarding.
           </p>
         </div>
         <div className="status-stack" aria-label="Application status">

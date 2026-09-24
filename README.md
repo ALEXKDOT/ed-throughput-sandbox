@@ -1,13 +1,13 @@
 # ED Throughput Sandbox
 
-An interactive, browser-based discrete-event simulation with two complementary workspaces: a compact analytical Sandbox and a replayable, patient-and-resource-level Visualizer.
+A browser-based discrete-event simulation with two workspaces: Sandbox for aggregate scenario analysis and Visualizer for patient and resource replay.
 
 **[Open the live demo](https://alexkdot.github.io/ed-throughput-sandbox/)** · [Model specification](./docs/MODEL.md) · [Evidence and limitations](./docs/QA.md)
 
 - Configure synthetic arrivals, acuity, treatment spaces, care duration, admission, boarding, and low-acuity fast-track assumptions.
 - Run seeded Monte Carlo replications and inspect medians with 10th–90th percentile simulation intervals.
-- Compare paired A/B scenarios, explore one-at-a-time sensitivity, and share or export assumptions and results.
-- Replay a representative synthetic week with actual ESI 1–5, individual resources, diagnostic queues, uncapped waiting and boarding census, exact scrubbing, patient journeys, resource inspection, synchronized A/B maps, and editable stage-level clinical-flow assumptions.
+- Compare paired A/B scenarios, run one-at-a-time sensitivity analysis, and share or export assumptions and results.
+- Replay a representative synthetic week with actual ESI 1–5, individual resources, diagnostic queues, uncapped waiting and boarding census, exact scrubbing, patient event histories, resource inspection, synchronized A/B maps, and editable stage-level clinical-flow assumptions.
 
 > **Synthetic-model disclaimer:** This educational systems-modeling project uses illustrative synthetic assumptions and no patient data. It has not been calibrated or validated to any institution, has measured no patient or operational impact, and must not be used for clinical, staffing, regulatory, or operational decisions.
 
