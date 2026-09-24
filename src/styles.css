@@ -4413,6 +4413,36 @@ thead th {
   }
 }
 
+@media (max-width: 700px) {
+  .visualizer-intro {
+    width: calc(100vw - 36px);
+    max-width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .visualizer-intro > div:first-child {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .visualizer-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .visualizer-intro .instructions-download {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .visualizer-run-summary {
+    min-width: 0;
+    justify-items: start;
+  }
+}
+
 @media print {
   :root {
     background: white;
